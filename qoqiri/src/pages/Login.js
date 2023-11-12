@@ -118,12 +118,19 @@ export default function Login() {
           <div className="errorMessageWrap">
             {!pwValid && pw.length > 0 && <div>비밀번호를 입력해주세요.</div>}
           </div>
+          <br></br>
 
-          <div className="linksWrap">
+          {/* <div className="linksWrap">
           <h4 style={{ fontSize: "14px" }}>아이디가 없으신가요?</h4>
             <span> → </span>
             <a href="/signup" style={{ fontSize: "13px" }}>회원가입</a>
-          </div>
+          </div> */}
+          
+          <a href="/signup" style={{ fontSize: "13px" }}>회원가입</a> <span> | </span>
+
+
+          <br></br>
+
           <br />
           <div>
             <button type="submit" disabled={notAllow} className="bottomButton">
@@ -133,7 +140,7 @@ export default function Login() {
         </form>
       </div>
 
-      
+
     </div>
   );
 }
