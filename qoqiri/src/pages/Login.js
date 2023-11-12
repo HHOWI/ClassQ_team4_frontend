@@ -77,19 +77,6 @@ export default function Login() {
 
   const handleFindIdSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      const response = await axios.get(`/userInfo/findIdByEmail?email=${findIdEmail}`);
-      if (response.status === 200) {
-        const userId = response.data;
-        alert(`아이디는 ${userId} 입니다.`);
-        closeFindIdModal();
-      } else {
-        alert("아이디를 찾을 수 없습니다. 이메일 주소를 확인해주세요.");
-      }
-    } catch (error) {
-      alert("아이디 찾기 중 오류 발생");
-    }
   };
 
   return (
