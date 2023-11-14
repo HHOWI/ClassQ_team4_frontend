@@ -4,7 +4,6 @@ import logo from "../assets/logo.png";
 import { useDispatch } from "react-redux";
 import { asyncLogin } from "../store/userSlice";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 export default function Login() {
   const [id, setId] = useState("");
@@ -12,8 +11,6 @@ export default function Login() {
   const [idValid, setIdValid] = useState(false);
   const [pwValid, setPwValid] = useState(false);
   const [notAllow, setNotAllow] = useState(true);
-  const [showFindIdModal, setShowFindIdModal] = useState(false);
-  const [findIdEmail, setFindIdEmail] = useState("");
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -61,23 +58,6 @@ export default function Login() {
     } catch (error) {
       alert("로그인 중 오류 발생");
     }
-  };
-
-  const openFindIdModal = () => {
-    setShowFindIdModal(true);
-  };
-
-  const closeFindIdModal = () => {
-    setShowFindIdModal(false);
-  };
-
-  const handleFindIdEmailChange = (e) => {
-    setFindIdEmail(e.target.value);
-  };
-
-  const handleFindIdSubmit = async (e) => {
-    e.preventDefault();
-
   };
 
   return (
@@ -131,7 +111,7 @@ export default function Login() {
 
           <a href="/signup" style={{ fontSize: "13px" }}>회원가입</a>
           <span> | </span>
-          <a href="#" style={{ fontSize: "13px" }}>비밀번호 찾기</a>
+          <a href="" style={{ fontSize: "13px" }}>비밀번호 찾기</a>
          
 
           <br></br>
