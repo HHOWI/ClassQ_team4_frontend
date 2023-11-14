@@ -77,6 +77,7 @@ export default function Login() {
 
   const handleFindIdSubmit = async (e) => {
     e.preventDefault();
+
   };
 
   return (
@@ -120,17 +121,18 @@ export default function Login() {
           </div>
           <br></br>
 
+
+
           {/* <div className="linksWrap">
           <h4 style={{ fontSize: "14px" }}>아이디가 없으신가요?</h4>
             <span> → </span>
             <a href="/signup" style={{ fontSize: "13px" }}>회원가입</a>
           </div> */}
-          
-          <a href="/signup" style={{ fontSize: "13px" }}>회원가입</a> <span> | </span>
 
+          <a href="/signup" style={{ fontSize: "13px" }}>회원가입</a>
+          <span> | </span>
 
           <br></br>
-
           <br />
           <div>
             <button type="submit" disabled={notAllow} className="bottomButton">
@@ -140,7 +142,7 @@ export default function Login() {
         </form>
       </div>
 
-
+      
     </div>
   );
 }
