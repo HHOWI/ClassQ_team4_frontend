@@ -111,8 +111,7 @@ export default function Login() {
 
           <a href="/signup" style={{ fontSize: "13px" }}>회원가입</a>
           <span> | </span>
-          <a href="" style={{ fontSize: "13px" }}>비밀번호 찾기</a>
-         
+          <a href="/FindPasswordByEmail" style={{ fontSize: "13px" }}>비밀번호 찾기</a>
 
           <br></br>
           <br />

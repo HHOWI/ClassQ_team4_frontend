@@ -17,6 +17,7 @@ import SignupInfo from './pages/SignupInfo';
 import Myactive from './pages/Myactive';
 import MyComments from './pages/Mycomments';
 import MyPost from './pages/Mypost';
+import FindPasswordByEmail from './pages/FindPasswordByEmail';
 
 const router = createBrowserRouter([
     {
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
             {
                 path: 'apply/:postSEQ',
                 element: <Apply />,
+            },
+            {
+                path: '/FindPasswordByEmail',
+                element: <FindPasswordByEmail />,
             },
         ],
     },
