@@ -298,7 +298,7 @@ const PostEdit = () => {
                 console.log(MatchingDTO);
 
                 // 기존에 업로드한 첨부 파일 삭제
-                 await deleteAttachmentsAPI(postResponse.data.postSEQ);
+                //  await deleteAttachmentsAPI(postResponse.data.postSEQ);
 
                 // editMatchingAPI 호출
                 const matchingResponse = await addMatchingAPI({                 
@@ -391,7 +391,7 @@ const PostEdit = () => {
                                     </div>
                                 )}
                             </div>
-                         <div id="file-update">
+                         {/* <div id="file-update">
                             <label htmlFor="image-update">
                                 <input
                                     type="file"
@@ -403,8 +403,8 @@ const PostEdit = () => {
                                 />
                                 <span>사진첨부</span>
                             </label>
-                        </div>
-                        <div>
+                        </div> */}
+                        {/* <div>
                                <div className="board-image-main">
                                     <div className="board-image">
                                         {attachmentImg.map((attachment, index) => (
@@ -432,7 +432,7 @@ const PostEdit = () => {
                               </div>
                                 ))}
                                 </div>                                                                                         
-                            </div> 
+                            </div>  */}
                         <div className="post-content">
                             <div className="textareaContainer">
                                 <textarea

@@ -187,7 +187,7 @@ const DetailView = ({ selectedPostSEQ }) => {
     getAttachmentsAPI();
   }, [selectedPostSEQ]);
 
-  const deletePost = () => {
+  const deletePostAPI = () => {
     deletePost(selectedPostSEQ);
     alert("게시물이 삭제됐습니다.");
     window.location.reload();
@@ -374,7 +374,7 @@ const DetailView = ({ selectedPostSEQ }) => {
             <a className="post-put" href={`/postedit/${selectedPostSEQ}`}>
               수정
             </a>
-            <button className="post-delete" onClick={deletePost}>
+            <button className="post-delete" onClick={deletePostAPI()}>
               삭제
             </button>
           </div>
