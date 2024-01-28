@@ -2,13 +2,11 @@ import { createBrowserRouter } from "react-router-dom";
 import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
-import Mini from "./pages/Mini";
 import Apply from "./pages/Apply";
 import Login from "./pages/Login";
 import SignUp from "./pages/Signup";
 import UserInfoPage from "./pages/Myinfo";
 import Review from "./pages/Review";
-import MiniUp from "./pages/MiniUp";
 import PostWrite from "./pages/PostWrite";
 import PostEdit from "./pages/PostEdit";
 import EditProfile from "./pages/EditProfile";
@@ -85,14 +83,6 @@ const router = createBrowserRouter([
         element: <Apply />,
       },
     ],
-  },
-  {
-    path: "/miniup/:userId",
-    element: <MiniUp />,
-  },
-  {
-    path: "/mini/:userId",
-    element: <Mini />,
   },
 ]);
 export default router;

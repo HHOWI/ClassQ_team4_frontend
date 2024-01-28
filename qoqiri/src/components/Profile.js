@@ -1,20 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Imgmodal from "./imgmodal";
-import { getUser } from "../api/user";
+import { getUser, userLike } from "../api/user";
 import defaultimg from "../assets/defaultimg.png";
-import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import {
-  matchingAccept,
-  hideMachingUser,
-  getApplicantUserMatchingInfo,
-} from "../api/matching";
 import styled from "styled-components";
 import { getUserCategory } from "../api/category";
-import { formatDate24Hours } from "../utils/TimeFormat";
 import { postBlockUser, getBlockUser, putBlockUser } from "../api/blockuser";
 
-const StyledApplyForm = styled.div`
+const StyledProfile = styled.div`
   .ap_container {
     margin-top: 20px;
   }
@@ -28,6 +21,7 @@ const StyledApplyForm = styled.div`
   }
 
   .ap_front_info {
+    padding-top: 25px;
     width: 100%;
     height: 100%;
     background-color: rgb(231, 240, 252);
@@ -43,16 +37,6 @@ const StyledApplyForm = styled.div`
     backface-visibility: hidden;
   }
 
-  .ap_front_top {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-    font-size: 0.9rem;
-    padding-left: 10px;
-    padding-right: 10px;
-    width: 100%;
-  }
-
   .ap_back_top {
     padding-left: 10px;
     padding-right: 10px;
@@ -60,12 +44,6 @@ const StyledApplyForm = styled.div`
     justify-content: space-between;
     margin-top: 12px;
     font-size: 0.9rem;
-  }
-
-  .ap_hide {
-    border: none;
-    font-weight: bold;
-    background-color: transparent;
   }
 
   .ap_main_image {
@@ -107,8 +85,7 @@ const StyledApplyForm = styled.div`
   }
 
   .ap_front_infoBtn,
-  .ap_like,
-  .ap_block_user {
+  .ap_front_likeBtn {
     border: none;
     color: white;
     font-weight: bold;
@@ -122,10 +99,7 @@ const StyledApplyForm = styled.div`
     border-right: 0.5px solid rgb(231, 240, 252);
     border-bottom-left-radius: 26px;
   }
-  .ap_like {
-    border-right: 0.5px solid rgb(231, 240, 252);
-  }
-  .ap_block_user {
+  .ap_front_likeBtn {
     border-left: 0.5 solid rgb(231, 240, 252);
     border-bottom-right-radius: 26px;
   }
@@ -138,7 +112,7 @@ const StyledApplyForm = styled.div`
   }
 
   .ap_back_infoBtn,
-  .ap_back_applyBtn {
+  .ap_back_blockBtn {
     border: none;
     color: white;
     font-weight: bold;
@@ -150,11 +124,11 @@ const StyledApplyForm = styled.div`
 
   .ap_back_infoBtn {
     border-right: 0.5px solid rgb(231, 240, 252);
-    border-bottom-left-radius: 27px;
+    border-bottom-left-radius: 26px;
   }
-  .ap_back_applyBtn {
+  .ap_back_blockBtn {
     border-left: 0.5 solid rgb(231, 240, 252);
-    border-bottom-right-radius: 27px;
+    border-bottom-right-radius: 26px;
   }
 
   .ap_back_info {
@@ -194,14 +168,12 @@ const StyledApplyForm = styled.div`
 
     .ap_back_age,
     .ap_back_gender,
-    .ap_back_place,
-    .ap_back_rating {
+    .ap_back_place {
       color: rgb(49, 49, 49);
     }
   }
 
-  .ap_back_place,
-  .ap_back_rating {
+  .ap_back_place {
     margin-bottom: 10px;
   }
 
@@ -234,8 +206,6 @@ const Profile = ({ userId, postSEQ }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userCategoryList, setUserCategoryList] = useState([]);
-  const [applicantUserMatchingInfo, setApplicantUserMatchingInfo] =
-    useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [userData, setUserData] = useState({ introduction: "" });
   const user = useSelector((state) => state.user);
@@ -286,6 +256,10 @@ const Profile = ({ userId, postSEQ }) => {
     }
   };
 
+  const userLikeAPI = async () => {
+    await userLike(userLikeDTO);
+  };
+
   useEffect(() => {
     blockUserAPI();
   }, [user, blockUserFetched]);
@@ -294,6 +268,11 @@ const Profile = ({ userId, postSEQ }) => {
     id: user.id,
     postSEQ: postSEQ,
     applicantId: userId,
+  };
+
+  const userLikeDTO = {
+    likeUpUser: user.id,
+    likeUpTarget: userId,
   };
 
   const getUserAPI = async () => {
@@ -306,15 +285,9 @@ const Profile = ({ userId, postSEQ }) => {
     setUserCategoryList(result.data);
   };
 
-  const getApplicantUserMatchingInfoAPI = async () => {
-    const result = await getApplicantUserMatchingInfo(postSEQ, userId);
-    setApplicantUserMatchingInfo(result.data);
-  };
-
   useEffect(() => {
     getUserAPI();
     getUserCategoryAPI();
-    getApplicantUserMatchingInfoAPI();
   }, [userId]);
 
   const handleCardClick = () => {
@@ -328,17 +301,8 @@ const Profile = ({ userId, postSEQ }) => {
     setIsModalOpen(false);
   };
 
-  const matchingAcceptAPI = () => {
-    matchingAccept(chatDTO);
-    window.location.reload();
-  };
-  const hideMatchingUser = () => {
-    hideMachingUser(chatDTO);
-    window.location.reload();
-  };
-
   return (
-    <StyledApplyForm>
+    <StyledProfile>
       <div className="ap_container">
         <div className={`ap_custom_card ${isFlipped ? "flipped" : ""}`}>
           <div className="ap_front_info">
@@ -366,9 +330,8 @@ const Profile = ({ userId, postSEQ }) => {
               <button className="ap_front_infoBtn" onClick={handleCardClick}>
                 상세 프로필
               </button>
-              <button className="ap_like">좋아요</button>
-              <button className="ap_block_user" onClick={handleBlockUser}>
-                차단하기
+              <button className="ap_front_likeBtn" onClick={userLikeAPI}>
+                좋아요
               </button>
             </div>
           </div>
@@ -388,9 +351,6 @@ const Profile = ({ userId, postSEQ }) => {
                   ? userData?.placeType?.placeTypeName
                   : "비공개"}
               </div>
-              <div className="ap_back_rating">
-                평점 {userData?.rating !== 0 ? userData?.rating : "미평가"}
-              </div>
               <div className="ap_back_category">
                 관심사
                 <div className="ap_back_category_list">
@@ -409,6 +369,9 @@ const Profile = ({ userId, postSEQ }) => {
               <button className="ap_back_infoBtn" onClick={handleCardClick}>
                 기본 프로필
               </button>
+              <button className="ap_back_blockBtn" onClick={handleBlockUser}>
+                차단
+              </button>
             </div>
           </div>
         </div>
@@ -424,7 +387,7 @@ const Profile = ({ userId, postSEQ }) => {
           />
         )}
       </div>
-    </StyledApplyForm>
+    </StyledProfile>
   );
 };
 export default Profile;

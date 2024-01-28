@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Imgmodal from "./imgmodal";
 import { getUser } from "../api/user";
 import defaultimg from "../assets/defaultimg.png";
-import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   matchingAccept,
@@ -145,11 +144,11 @@ const StyledApplyForm = styled.div`
 
   .ap_back_infoBtn {
     border-right: 0.5px solid rgb(231, 240, 252);
-    border-bottom-left-radius: 27px;
+    border-bottom-left-radius: 26px;
   }
   .ap_back_applyBtn {
     border-left: 0.5 solid rgb(231, 240, 252);
-    border-bottom-right-radius: 27px;
+    border-bottom-right-radius: 26px;
   }
 
   .ap_back_info {
@@ -189,14 +188,12 @@ const StyledApplyForm = styled.div`
 
     .ap_back_age,
     .ap_back_gender,
-    .ap_back_place,
-    .ap_back_rating {
+    .ap_back_place {
       color: rgb(49, 49, 49);
     }
   }
 
-  .ap_back_place,
-  .ap_back_rating {
+  .ap_back_place {
     margin-bottom: 10px;
   }
 
@@ -235,7 +232,7 @@ const ApplyForm = ({ userId, postSEQ }) => {
   const [userData, setUserData] = useState({ introduction: "" });
   const user = useSelector((state) => state.user);
 
-  const chatDTO = {
+  const DTO = {
     id: user.id,
     postSEQ: postSEQ,
     applicantId: userId,
@@ -274,11 +271,11 @@ const ApplyForm = ({ userId, postSEQ }) => {
   };
 
   const matchingAcceptAPI = () => {
-    matchingAccept(chatDTO);
+    matchingAccept(DTO);
     window.location.reload();
   };
   const hideMatchingUser = () => {
-    hideMachingUser(chatDTO);
+    hideMachingUser(DTO);
     window.location.reload();
   };
 
@@ -349,9 +346,6 @@ const ApplyForm = ({ userId, postSEQ }) => {
                 {userData?.placeType?.placeTypeName !== null
                   ? userData?.placeType?.placeTypeName
                   : "비공개"}
-              </div>
-              <div className="ap_back_rating">
-                평점 {userData?.rating !== 0 ? userData?.rating : "미평가"}
               </div>
               <div className="ap_back_category">
                 관심사

@@ -4,18 +4,15 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 import styled from "styled-components";
 import { editPostAPI, getAttachments, getPost, deletePost } from "../api/post";
-import UserRating from "../components/UserRating";
 import { viewComments } from "../store/commentSlice";
 import { useSelector, useDispatch } from "react-redux";
 import AddComment from "../components/AddComment";
 import Comment from "../components/Comment";
-import { postBlockUser, getBlockUser, putBlockUser } from "../api/blockuser";
 import { MatchingApply } from "../api/matching";
 import { joinChatRoom } from "../api/chat";
 import { asyncChatRooms } from "../store/chatRoomSlice";
 import { formatDate24Hours } from "../utils/TimeFormat";
-import { RepeatOneSharp } from "@mui/icons-material";
-import ApplyFormModal from "./ApplyFormModal";
+import ProfileModal from "./ProfileModal";
 
 const Detail = styled.div`
   border-top: 33px solid #ff7f38;
@@ -107,54 +104,17 @@ const DetailView = ({ selectedPostSEQ }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [post, setPost] = useState({});
   const [attachments, setAttachments] = useState([]);
-  const [blockUser, setBlockUser] = useState([]);
-  const [blockUserFetched, setBlockUserFetched] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-  const [contextMenuVisible, setContextMenuVisible] = useState(false);
-  const [isApplyFormOpen, setIsApplyFormOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  const openApplyForm = () => {
-    setIsApplyFormOpen(true);
+  const openProfile = () => {
+    setIsProfileModalOpen(true);
   };
 
-  // 유저 차단하기 좌클릭
-  const [contextMenuPosition, setContextMenuPosition] = useState({
-    x: 0,
-    y: 0,
-  });
-
-  const handleContextMenu = (event) => {
-    event.preventDefault();
-
-    const xOffset = 50;
-    const yOffset = 60;
-
-    setContextMenuVisible(true);
-    setContextMenuPosition({
-      x: event.clientX + xOffset,
-      y: event.clientY + yOffset,
-    });
+  const handleCloseProfile = () => {
+    setIsProfileModalOpen(false);
   };
-  const closeContextMenu = (event) => {
-    if (
-      !document.getElementById("contextMenu").contains(event.target) &&
-      event.target.id !== "leftClickButton"
-    ) {
-      setContextMenuVisible(false);
-      document.removeEventListener("mousedown", closeContextMenu);
-    }
-  };
-
-  useEffect(() => {
-    if (contextMenuVisible) {
-      document.addEventListener("mousedown", closeContextMenu);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", closeContextMenu);
-    };
-  }, [contextMenuVisible]);
 
   // 댓글 슬라이스
   const comments = useSelector((state) => {
@@ -243,54 +203,6 @@ const DetailView = ({ selectedPostSEQ }) => {
     }
   };
 
-  const blockUserAPI = async () => {
-    try {
-      if (!blockUserFetched) {
-        const result = await getBlockUser(user.id);
-        setBlockUser(result.data);
-        setBlockUserFetched(true);
-      }
-    } catch (error) {}
-  };
-
-  const handleBlockUser = async () => {
-    const sendUserInfo = {
-      userInfo: {
-        userId: user.id,
-      },
-      blockInfo: { userId: post?.userInfo?.userId },
-    };
-
-    try {
-      // 사용자가 이미 차단되었는지 확인합니다.
-      const existingBlockUser = blockUser.find(
-        (blockedUser) => blockedUser.blockInfo.userId === post?.userInfo?.userId
-      );
-
-      if (existingBlockUser) {
-        // 이미 차단된 경우 차단 정보를 업데이트합니다.
-        const updatedBlockUser = await putBlockUser(post.userInfo.userId);
-        alert("차단했습니다.");
-        // 필요한 경우 updatedBlockUser 데이터를 처리합니다.
-      } else {
-        // 차단되지 않은 경우 새로운 차단 항목을 생성합니다.
-        const createdBlockUser = await postBlockUser(sendUserInfo);
-        alert("차단했습니다.");
-        // 필요한 경우 createdBlockUser 데이터를 처리합니다.
-      }
-
-      // 페이지를 다시 로드하거나 필요한 경우 상태를 업데이트합니다.
-      window.location.reload();
-    } catch (error) {
-      // 오류 처리
-      console.error("사용자 차단 중 오류 발생:", error);
-    }
-  };
-
-  useEffect(() => {
-    blockUserAPI();
-  }, [user, blockUserFetched]);
-
   return (
     <Detail>
       <div className="board-detail">
@@ -305,38 +217,14 @@ const DetailView = ({ selectedPostSEQ }) => {
                   ? `/uploadprofile/${post?.userInfo?.profileImg}`
                   : defaultimg
               }
-              onClick={openApplyForm}
+              onClick={openProfile}
             />
           </div>
           <div className="titleNickname">
             <div className="title">{post?.postTitle}</div>
-            <div
-              className="nickname"
-              id="leftClickButton"
-              onMouseDown={handleContextMenu}
-            >
+            <div className="nickname" id="leftClickButton">
               {post?.userInfo?.userNickname}
             </div>
-            {contextMenuVisible && (
-              <div
-                id="contextMenu"
-                style={{
-                  display: "block",
-                  position: "absolute",
-                  backgroundColor: "#fff",
-                  border: "1px solid #ccc",
-                  boxShadow: "2px 2px 5px rgba(0, 0, 0, 0.2)",
-                  padding: "10px",
-                  zIndex: 1000,
-                  left: contextMenuPosition.x + "px",
-                  top: contextMenuPosition.y + "px",
-                }}
-              >
-                <div onClick={handleBlockUser} style={{ cursor: "pointer" }}>
-                  유저차단하기
-                </div>
-              </div>
-            )}
           </div>
         </div>
         <div className="board-image-main">
@@ -435,8 +323,12 @@ const DetailView = ({ selectedPostSEQ }) => {
           </div>
         </div>
       )}
-      {isApplyFormOpen && (
-        <ApplyFormModal userId={post.userInfo.userId} postSEQ={post.postSEQ} />
+      {isProfileModalOpen && (
+        <ProfileModal
+          userId={post.userInfo.userId}
+          postSEQ={post.postSEQ}
+          handleCloseProfile={handleCloseProfile}
+        />
       )}
     </Detail>
   );

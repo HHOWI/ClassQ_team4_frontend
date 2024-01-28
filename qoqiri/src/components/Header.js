@@ -85,7 +85,10 @@ const Header = () => {
               src={title}
               className="App-title"
               alt="title"
-              style={{ height: "40px", width: "auto" }}
+              style={{
+                height: "40px",
+                width: "auto",
+              }}
             />
           </a>
         </div>
@@ -111,7 +114,11 @@ const Header = () => {
           >
             <FontAwesomeIcon
               icon={faMagnifyingGlass}
-              style={{ height: "20px", width: "auto" }}
+              style={{
+                height: "20px",
+                width: "auto",
+                color: "rgb(49, 49, 49)",
+              }}
             />
           </button>
         </div>

@@ -1,0 +1,58 @@
+.offcanvas-body {
+  white-space: normal;
+  overflow-y: auto;
+  max-height: 100vh;
+  line-height: 1.4;
+  background-color: rgb(235, 238, 241);
+  border-top: 1px solid rgb(189, 189, 189);
+}
+
+.offcanvas-body::-webkit-scrollbar {
+  width: 6px; /* 스크롤바 너비 조절 */
+}
+
+.offcanvas-body::-webkit-scrollbar-thumb {
+  background-color: rgb(199, 199, 199); /* 스크롤바 색상 조절 */
+  border-radius: 10px; /* 스크롤바 둥글게 만들기 */
+}
+
+.offcanvas-body::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(156, 156, 156); /* 스크롤바 호버 시 색상 변경 */
+}
+
+.chatlist {
+  display: flex;
+  flex-direction: column; /* 세로로 정렬 */
+  gap: 10px; /* 버튼 사이의 간격 조절 */
+}
+
+.chat-link {
+  background-color: white;
+  border-radius: 15px;
+  border: 0.5px solid rgb(224, 224, 224);
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  cursor: pointer;
+}
+
+.chat-top {
+  display: flex;
+  justify-content: space-between; /* 내부 요소를 양옆 끝으로 정렬 */
+}
+
+.chat-exp {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.chat-time {
+  font-size: 0.8rem;
+  margin-right: 5px;
+  color: gray;
+}
+
+.chat-addr {
+  font-size: 1rem;
+  white-space: normal;
+  margin-top: 10px;
+}
