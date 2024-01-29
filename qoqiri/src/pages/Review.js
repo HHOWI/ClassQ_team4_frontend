@@ -8,17 +8,21 @@ import {
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { deletePost } from "../api/post";
+import ProfileModal from "../components/ProfileModal";
+import DetailView from "../components/DetailView";
 
 const StyledReview = styled.div`
   width: 100%;
   padding-left: 240px;
   padding-top: 30px;
-  padding-bottom: 30px;
-  margin: auto;
+  padding-bottom: 50px;
 
   .rv-container {
-    width: 1100px;
-    padding-left: 100px;
+    width: 100%;
+    min-width: 1000px;
+    padding-left: 180px;
+    display: flex;
+    flex-direction: column;
   }
 
   .rv-container h1 {
@@ -28,46 +32,73 @@ const StyledReview = styled.div`
     margin-bottom: 30px;
   }
 
+  .rv-input-area {
+    width: 1000px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    margin-bottom: 20px;
+    gap: 2px;
+  }
+
+  .rv-select {
+    width: 11%;
+    height: 100%;
+    display: flex;
+    justify-items: baseline;
+    font-size: 13px;
+    font-weight: bold;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    color: rgb(49, 49, 49);
+  }
+
+  .rv_textbox {
+    width: 85%;
+    height: 100%;
+    position: relative;
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      resize: none;
+    }
+
+    .rv-character-count {
+      font-size: 0.9em;
+      color: gray;
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+    }
+  }
+
   .rv-write-button {
+    width: 4%;
+    height: 100%;
     font-weight: bold;
     background-color: #ff7f38;
     color: white;
-    padding: 10px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
-    margin-bottom: 20px;
-    position: relative;
-    left: 1px;
-    height: 90px;
-  }
-
-  .rv-input-area {
-    display: flex;
-    margin-bottom: 20px;
-    justify-content: center;
-  }
-
-  .rv-input-area textarea {
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    resize: none;
-    height: 90px;
-    width: 100rem;
   }
 
   .rv-review-board {
-    border: 1px solid #e0e0e0;
+    width: 100%;
+    min-width: 100px;
   }
 
   .rv-review-item {
-    width: 100%;
-    padding: 10px;
+    width: 1000px;
+    height: 100px;
+    padding: 15px;
     border-bottom: 1px solid #e0e0e08e;
     transition: background-color 0.3s;
-    height: 100px;
   }
 
   .rv-review-item:hover {
@@ -78,7 +109,7 @@ const StyledReview = styled.div`
     border-bottom: none;
   }
 
-  .rv-writerInfo {
+  .rv_post_info {
     width: 100%;
     height: 100%;
     display: flex;
@@ -86,17 +117,27 @@ const StyledReview = styled.div`
     justify-content: space-between;
   }
 
-  .rv-info {
-    font-size: 0.8rem;
-    .rv-writer {
-      margin-right: 40px;
-    }
+  .rv_post_content {
+    font-size: 1.2rem;
+    color: rgb(49, 49, 49);
   }
 
   .rv-menu {
     width: 100%;
     display: flex;
     justify-content: space-between;
+  }
+
+  .rv-info {
+    font-size: 0.8rem;
+    color: gray;
+    .rv-writer {
+      margin-right: 40px;
+      cursor: pointer;
+    }
+    .rv-matching-title {
+      cursor: pointer;
+    }
   }
 
   .rv-stats-thums {
@@ -112,10 +153,6 @@ const StyledReview = styled.div`
     position: relative;
     bottom: 20px;
     margin: 6px;
-  }
-
-  .rv-input-area {
-    position: relative;
   }
 
   .rv-review-item textarea {
@@ -152,24 +189,8 @@ const StyledReview = styled.div`
     font-weight: bold;
   }
 
-  .rv-character-count {
-    position: absolute;
-    top: 95px; /* 위치 조절이 필요할 수 있습니다 */
-    font-size: 0.9em;
-    color: gray;
-  }
-
   .rv-review-item p {
     font-size: 20px;
-  }
-
-  .rv-like-array {
-    border: none;
-    position: relative;
-    top: 110px;
-    right: 10px;
-    font-weight: bolder;
-    color: #ff7f38;
   }
 
   .rv-modal {
@@ -182,7 +203,7 @@ const StyledReview = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 30;
   }
 
   .rv-modal-content {
@@ -194,17 +215,6 @@ const StyledReview = styled.div`
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
   }
-
-  .rv-select {
-    font-size: 13px;
-    width: 110px;
-    display: flex;
-    justify-items: baseline;
-    font-weight: bold;
-    height: 90px;
-    border: 1px solid #e0e0e0;
-    position: relative;
-  }
 `;
 
 const ReviewBoard = () => {
@@ -213,13 +223,13 @@ const ReviewBoard = () => {
   const [loggedInUser, setLoggedInUser] = useState("");
   const [content, setContent] = useState("");
   const [editingContent, setEditingContent] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [modalContentURL, setModalContentURL] = useState("");
   const [myMatchings, setMyMatchings] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingPostId, setEditingPostId] = useState(null);
   const [selectedMatching, setSelectedMatching] = useState(""); // 선택된 글 타이틀
   const [editingPostTitle, setEditingPostTitle] = useState(""); // 수정할 글 타이틀
+  const [writerId, setWriterId] = useState("");
+  const [postSEQ, SetPostSEQ] = useState("");
 
   const getAllReviewAPI = async () => {
     const result = await getAllReview();
@@ -231,11 +241,22 @@ const ReviewBoard = () => {
     setMyMatchings(result.data);
   };
 
-  useEffect(() => {
-    setLoggedInUser(user);
-    getMyMatchingsAPI(); // 사용자 글 목록 가져오기
-    getAllReviewAPI();
-  }, [user]);
+  const handleOpenProfile = (id) => {
+    setWriterId(id);
+  };
+
+  const handleCloseProfile = () => {
+    setWriterId(null);
+  };
+
+  const handleOpenDetailView = (postSEQ) => {
+    SetPostSEQ(postSEQ);
+  };
+
+  // 게시글 상세보기 모달 닫기 함수
+  const handleCloseDetailView = () => {
+    SetPostSEQ(null);
+  };
 
   // 리뷰 수정버튼 활성화함수
   const handleEditClick = (postId, content, postTitle) => {
@@ -255,7 +276,6 @@ const ReviewBoard = () => {
       board: 2,
       postSEQ: editingPostId,
     };
-    console.log(updateData);
 
     try {
       await updateReview(updateData);
@@ -285,7 +305,6 @@ const ReviewBoard = () => {
   // 드롭박스로 선택한 매칭글 담기
   const handleMatchingSelect = async (data) => {
     await setSelectedMatching(data);
-    console.log(data);
   };
 
   // 글쓰기 버튼 함수
@@ -302,8 +321,7 @@ const ReviewBoard = () => {
         token: user.token, //로그인한 사용자의 토큰
         postContent: content,
         boardSEQ: 2,
-        postTitle: content, // 드롭박스 만들기 및 선택하기
-        postSEQ: selectedMatching,
+        postTitle: selectedMatching,
       };
       try {
         // 리뷰 내용을 백엔드로 전송
@@ -314,35 +332,29 @@ const ReviewBoard = () => {
         alert("리뷰 저장에 실패하였습니다. 다시 시도해주세요.");
       }
     } else {
-      alert("댓글은 50자를 초과할 수 없습니다.");
+      alert("50자를 초과할 수 없습니다.");
     }
   };
 
+  // 리뷰글 수정 함수
   const handleContentChange = (e, isEditingMode = false) => {
     const value = e.target.value;
     if (value.length <= 50) {
       if (isEditingMode) {
-        setEditingContent(value); // 수정 모드에서는 editingContent를 업데이트
+        setEditingContent(value);
       } else {
         setContent(value);
       }
     } else {
-      alert("댓글은 50자를 초과할 수 없습니다.");
+      alert("50자를 초과할 수 없습니다.");
     }
   };
 
-  const handleWriterClick = (userId) => {
-    let modalUrl =
-      loggedInUser && userId === loggedInUser.id
-        ? `/mini/${userId}`
-        : `/mini/${userId}`;
-
-    setModalContentURL(modalUrl);
-    setShowModal(true);
-  };
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
+  useEffect(() => {
+    setLoggedInUser(user);
+    getMyMatchingsAPI(); // 사용자 글 목록 가져오기
+    getAllReviewAPI();
+  }, [user]);
 
   return (
     <StyledReview>
@@ -358,18 +370,20 @@ const ReviewBoard = () => {
             {myMatchings.map((myMatching) => (
               <option
                 key={myMatching.post?.postSEQ}
-                value={myMatching.post?.postSEQ}
+                value={myMatching.post?.postTitle}
               >
                 {myMatching.post?.postTitle}
               </option>
             ))}
           </select>
-          <textarea
-            placeholder="리뷰 내용을 입력하세요. (50자를 초과할 수 없습니다.)"
-            value={content}
-            onChange={handleContentChange}
-          ></textarea>
-          <div className="rv-character-count">{content.length}/50</div>
+          <div className="rv_textbox">
+            <textarea
+              placeholder="리뷰 내용을 입력하세요. (50자를 초과할 수 없습니다.)"
+              value={content}
+              onChange={handleContentChange}
+            />
+            <div className="rv-character-count">{content.length}/50</div>
+          </div>
           <button className="rv-write-button" onClick={handleWriteClick}>
             글쓰기
           </button>
@@ -382,7 +396,7 @@ const ReviewBoard = () => {
                   <textarea
                     value={editingContent}
                     onChange={(e) => handleContentChange(e, true)}
-                  ></textarea>
+                  />
                   <button
                     className="rv-psUpdataOKBtn"
                     onClick={handleUpdateSubmit}
@@ -392,17 +406,20 @@ const ReviewBoard = () => {
                 </>
               ) : (
                 <>
-                  <div className="rv-writerInfo">
-                    <p>{po.postContent}</p>
+                  <div className="rv_post_info">
+                    <div className="rv_post_content">{po.postContent}</div>
                     <div className="rv-menu">
                       <div className="rv-info">
                         <span
                           className="rv-writer"
-                          onClick={() => handleWriterClick(po.userInfo.userId)}
+                          onClick={() => handleOpenProfile(po.userInfo.userId)}
                         >
                           작성자: {po.userInfo.userNickname}
                         </span>
-                        <span className="rv-writer-title">
+                        <span
+                          className="rv-matching-title"
+                          onClick={() => handleOpenDetailView(po.postSEQ)}
+                        >
                           원글 제목 : {po.postTitle}
                         </span>
                       </div>
@@ -435,21 +452,19 @@ const ReviewBoard = () => {
             </div>
           ))}
         </div>
-
-        {showModal && (
-          <div className="rv-modal" onClick={handleCloseModal}>
-            <div
-              className="rv-modal-content"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span className="rv-close-button" onClick={handleCloseModal}>
-                &times;
-              </span>
-              <iframe src={modalContentURL} width="100%" height="100%"></iframe>
-            </div>
-          </div>
-        )}
       </div>
+      {writerId && (
+        <ProfileModal
+          userId={writerId}
+          handleCloseProfile={handleCloseProfile}
+        />
+      )}
+      {postSEQ && (
+        <DetailView
+          selectedPostSEQ={postSEQ}
+          handleCloseDetailView={handleCloseDetailView}
+        />
+      )}
     </StyledReview>
   );
 };

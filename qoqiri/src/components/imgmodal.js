@@ -1,17 +1,11 @@
 import React from "react";
 import "../css/imgmodal.css";
 
-const imgmodal = ({ images, index, close }) => {
-  const currentImage = images[index];
-
-  if (!currentImage) {
-    return null;
-  }
-
+const imgmodal = ({ images, close }) => {
   return (
     <div className="modal-overlay" onClick={close}>
       <div className="modal-main">
-        <img src={currentImage} alt="imgmodal" />
+        <img src={images} alt="imgmodal" />
         <button className="modal-close" onClick={close}>
           닫기
         </button>

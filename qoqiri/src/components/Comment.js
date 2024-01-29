@@ -10,8 +10,8 @@ import { faThumbsUp as solidThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { getLike, postLike, delLike } from "../api/commentLike";
 import { formatDate24Hours } from "../utils/TimeFormat";
 
-const Box = styled.div`
-  width: 95%;
+const StyledComment = styled.div`
+  width: 750px;
   margin: 10px auto;
   margin-bottom: 30px;
 
@@ -175,7 +175,7 @@ const Comment = ({ comment }) => {
   };
 
   return (
-    <Box>
+    <StyledComment>
       <h2>@{comment.userInfo.userNickname}</h2>
       <div className="buttons">
         <div className="spanButton">
@@ -233,7 +233,7 @@ const Comment = ({ comment }) => {
         .map((reply) => (
           <Reply reply={reply} key={reply.commentsSEQ} />
         ))}
-    </Box>
+    </StyledComment>
   );
 };
 export default Comment;

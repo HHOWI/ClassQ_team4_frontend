@@ -21,48 +21,6 @@ import { formatDate24Hours } from "../utils/TimeFormat";
 import styled from "styled-components";
 
 const StyledMatchingBoardComponent = styled.div`
-  .Matching-modal::-webkit-scrollbar-button:horizontal:single-button:start {
-    position: absolute;
-    content: "";
-    border-bottom: 20px solid transparent;
-    border-right: 42px solid rgba(0, 0, 0, 0);
-    border-left: 20px solid transparent;
-    border-top: 20px solid transparent;
-  }
-
-  .Matching-modal::-webkit-scrollbar-button:vertical:single-button:start {
-    position: absolute;
-    content: "";
-    border-right: 20px solid transparent;
-    border-bottom: 62px solid rgba(0, 0, 0, 0);
-    border-left: 20px solid transparent;
-    border-top: 20px solid transparent;
-  }
-
-  .Matching-modal::-webkit-scrollbar-button:horizontal:single-button:end {
-    position: absolute;
-    overflow: hidden;
-    content: "";
-    border-bottom: 20px solid transparent;
-    border-left: 42px solid rgba(0, 0, 0, 0);
-    border-right: 20px solid transparent;
-    border-top: 20px solid transparent;
-  }
-
-  .Matching-modal::-webkit-scrollbar-button:vertical:single-button:end {
-    position: absolute;
-    overflow: hidden;
-    content: "";
-    border-bottom: 20px solid transparent;
-    border-top: 62px solid rgba(0, 0, 0, 0);
-    border-right: 20px solid transparent;
-    border-left: 20px solid transparent;
-  }
-
-  .Matching-modal::-webkit-scrollbar {
-    display: none;
-  }
-
   .real-main {
     width: 100%;
     min-width: 1450px;
@@ -314,151 +272,6 @@ const StyledMatchingBoardComponent = styled.div`
     background: #ff7f38;
     color: #ffffff;
   }
-
-  /* 모달 스타일 */
-
-  .Matching-modal-main {
-    z-index: 11;
-  }
-
-  .Matching-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .Matching-modal {
-    background: #ffffff;
-    width: 700px; /* 너비 조절 */
-    height: 500px; /* 높이 조절 */
-    /* padding: 10px; */
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    position: relative;
-    border-radius: 4px;
-
-    /* 화살표 스타일 */
-    .arrow-button {
-      position: absolute; /* 절대 위치 설정 */
-      top: 50%; /* 세로 중앙 정렬 */
-      transform: translateY(-50%); /* 세로 중앙 정렬을 위한 변형 */
-      font-size: 60px; /* 화살표 크기 조절 */
-      cursor: pointer; /* 커서 변경 */
-      color: #bcbcbc; /* 화살표 색상 설정 (원하는 색상으로 변경) */
-      z-index: 3;
-    }
-
-    .left-arrow {
-      left: 10px; /* 왼쪽에 위치 */
-    }
-
-    .right-arrow {
-      right: 10px; /* 오른쪽에 위치 */
-    }
-
-    /* 다른 스타일 속성들... */
-  }
-
-  .modal-image-body {
-    /* 이미지 컨테이너 스타일 속성들... */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .Matching-modal img {
-    max-width: 100%;
-    max-height: 100%;
-    display: block;
-    margin: 0 auto;
-  }
-
-  .modal-bar {
-    width: 100%;
-    /* background-color: #ff7f38; */
-    height: 20px;
-  }
-
-  .close-button {
-    position: absolute;
-    top: 10px; /* 수직 위치를 조정하려면 top 값을 조정하세요. */
-    right: 10px; /* 수평 위치를 조정하려면 right 값을 조정하세요. */
-    font-size: 20px;
-    cursor: pointer;
-    color: #ffffff; /* 선택 사항: 필요한대로 색상을 변경하세요. */
-  }
-
-  /* comment */
-
-  .comment {
-    display: flex;
-  }
-
-  .comment textarea {
-    border-style: none;
-    min-width: 750px;
-    min-height: 10px;
-    resize: none;
-  }
-
-  .comment button {
-    border-style: none;
-    cursor: pointer;
-    min-height: 10px;
-  }
-
-  .comment-profile {
-    margin-right: 10px;
-  }
-
-  .commentList {
-    display: flex;
-  }
-
-  svg:not(:root).svg-inline--fa,
-  svg:not(:host).svg-inline--fa {
-    overflow: visible;
-    box-sizing: content-box;
-    color: #ff7f38;
-  }
-
-  .play {
-    background: #ff7f38;
-    border-style: none;
-    color: white;
-    border-radius: 5px;
-    padding: 5px 10px;
-    height: 40px;
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-
-  #editPost {
-    background-color: #ff7f38;
-    color: white;
-    padding-top: 5px;
-    padding-right: 5px;
-    padding-left: 5px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-  }
-
-  #deletePost {
-    background: #ff7f38;
-    border-style: none;
-    color: white;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    font: inherit;
-  }
 `;
 
 const MatchingBoardComponent = () => {
@@ -532,6 +345,11 @@ const MatchingBoardComponent = () => {
       );
       setPosts(filteredBlock);
     }
+  };
+
+  // 게시글 상세보기 모달 닫기 함수
+  const handleCloseDetailView = () => {
+    setSelectedPostSEQ(null);
   };
 
   useEffect(() => {
@@ -849,22 +667,15 @@ const MatchingBoardComponent = () => {
                 더 보기
               </button>
             )}
-
-            {isOpen && (
-              <div className="Matching-modal-main">
-                <div className="Matching-modal-overlay">
-                  <div className="Matching-modal">
-                    <div className="close-button" onClick={closeModal}>
-                      &times;
-                    </div>
-                    <DetailView selectedPostSEQ={selectedPostSEQ} />
-                  </div>
-                </div>
-              </div>
-            )}
           </section>
         </main>
       </div>
+      {selectedPostSEQ && (
+        <DetailView
+          selectedPostSEQ={selectedPostSEQ}
+          handleCloseDetailView={handleCloseDetailView}
+        />
+      )}
     </StyledMatchingBoardComponent>
   );
 };

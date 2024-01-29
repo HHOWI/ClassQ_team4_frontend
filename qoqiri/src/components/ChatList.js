@@ -37,9 +37,6 @@ const ChatList = ({ show, handleClose, ...props }) => {
     }
   }, [show]);
 
-  // ChatRoom 모달이 열려 있는지 확인
-  const isChatRoomModalOpen = chatRoomSEQ !== null;
-
   return (
     <Offcanvas show={show} onHide={handleClose} {...props}>
       <Offcanvas.Header closeButton>
@@ -78,7 +75,7 @@ const ChatList = ({ show, handleClose, ...props }) => {
           })}
         </div>
       </Offcanvas.Body>
-      {isChatRoomModalOpen && (
+      {chatRoomSEQ && (
         <ChatRoom
           chatRoomSEQ={chatRoomSEQ}
           handleCloseChatRoom={handleCloseChatRoom}

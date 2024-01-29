@@ -28,11 +28,11 @@ const StyledChatRoom = styled.div`
   background-color: rgba(0, 0, 0, 0.2);
 
   .chatroom {
+    width: 850px;
+    height: 700px;
     background-color: white;
     display: flex;
     flex-direction: column;
-    width: 850px;
-    height: 700px;
     border: 3px solid #ff7f38;
     border-radius: 18px;
     overflow: hidden;
@@ -167,6 +167,11 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   const stompClient = useRef(null);
   const user = useSelector((state) => state.user);
 
+  const chatDTO = {
+    id: user.id,
+    chatRoomSEQ: chatRoomSEQ,
+  };
+
   //어느 채팅방인지 받아오기
   const chatRoomInfoAPI = async () => {
     const result = await getChatRoomInfo(chatRoomSEQ);
@@ -190,65 +195,6 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
     const chatContainer = document.getElementById("app");
     chatContainer.scrollTop = chatContainer.scrollHeight;
   };
-
-  const chatDTO = {
-    id: user.id,
-    chatRoomSEQ: chatRoomSEQ,
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [loadMessage, messages]);
-
-  useEffect(() => {
-    chatRoomInfoAPI();
-    chatMessageAPI();
-
-    const currentTime = new Date();
-    const socket = new SockJS("http://localhost:8080/ws/chat");
-    stompClient.current = new Client({
-      webSocketFactory: () => socket,
-      connectHeaders: {},
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-    });
-
-    // 무조건 유저의 채팅방 정보를 받아온 뒤에 작동해야됨!
-    // 특정 주소 구독처리(채팅방 구현)
-    userChatRoomInfoAPI().then((userChatRoomInfo) => {
-      stompClient.current.onConnect = () => {
-        stompClient.current.subscribe(
-          `/sub/chat/room/${chatRoomSEQ}`,
-          (message) => {
-            const recv = JSON.parse(message.body);
-            recvMessage(recv);
-          }
-        );
-
-        if (userChatRoomInfo.joinMessageSent == "N") {
-          stompClient.current.publish({
-            destination: "/pub/chat/message",
-            body: JSON.stringify({
-              nickname: user.nickname,
-              chatRoomSEQ: chatRoomSEQ,
-              message: user.nickname + "님이 채팅에 참여하였습니다.",
-              sendTime: currentTime.toISOString(),
-            }),
-          });
-          joinMessage(chatDTO);
-        }
-      };
-
-      stompClient.current.activate();
-
-      return () => {
-        if (stompClient.current && stompClient.current.active) {
-          stompClient.current.deactivate();
-        }
-      };
-    });
-  }, [user, chatRoomSEQ]);
 
   //메세지정보 서버로 전송
   const sendMessage = async () => {
@@ -307,6 +253,60 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   const close = () => {
     handleCloseChatRoom();
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [loadMessage, messages]);
+
+  useEffect(() => {
+    chatRoomInfoAPI();
+    chatMessageAPI();
+
+    const currentTime = new Date();
+    const socket = new SockJS("http://localhost:8080/ws/chat");
+    stompClient.current = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {},
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    // 무조건 유저의 채팅방 정보를 받아온 뒤에 작동해야됨!
+    // 특정 주소 구독처리(채팅방 구현)
+    userChatRoomInfoAPI().then((userChatRoomInfo) => {
+      stompClient.current.onConnect = () => {
+        stompClient.current.subscribe(
+          `/sub/chat/room/${chatRoomSEQ}`,
+          (message) => {
+            const recv = JSON.parse(message.body);
+            recvMessage(recv);
+          }
+        );
+
+        if (userChatRoomInfo.joinMessageSent == "N") {
+          stompClient.current.publish({
+            destination: "/pub/chat/message",
+            body: JSON.stringify({
+              nickname: user.nickname,
+              chatRoomSEQ: chatRoomSEQ,
+              message: user.nickname + "님이 채팅에 참여하였습니다.",
+              sendTime: currentTime.toISOString(),
+            }),
+          });
+          joinMessage(chatDTO);
+        }
+      };
+
+      stompClient.current.activate();
+
+      return () => {
+        if (stompClient.current && stompClient.current.active) {
+          stompClient.current.deactivate();
+        }
+      };
+    });
+  }, [user, chatRoomSEQ]);
 
   return (
     <StyledChatRoom>

@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { faArrowUpWideShort } from "@fortawesome/free-solid-svg-icons";
 
-const Form = styled.form`
+const StyledAddComment = styled.form`
   text-align: center;
   margin: 20px;
 
@@ -64,7 +64,7 @@ const AddComment = ({ code, active, parent }) => {
     window.location.reload();
   };
   return (
-    <Form onSubmit={onSubmit} className={active ? "active" : ""}>
+    <StyledAddComment onSubmit={onSubmit} className={active ? "active" : ""}>
       {isLoggedIn ? (
         <>
           <input
@@ -80,7 +80,7 @@ const AddComment = ({ code, active, parent }) => {
       ) : (
         <p>댓글을 작성하려면 로그인이 필요합니다.</p>
       )}
-    </Form>
+    </StyledAddComment>
   );
 };
 export default AddComment;

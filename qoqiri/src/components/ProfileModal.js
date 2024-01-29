@@ -14,7 +14,7 @@ const StyledApplyForm = styled.div`
   background-color: rgba(0, 0, 0, 0.3);
 `;
 
-const ProfileModal = ({ userId, postSEQ, handleCloseProfile }) => {
+const ProfileModal = ({ userId, handleCloseProfile }) => {
   const close = (e) => {
     // 클릭된 요소가 StyledApplyForm 자체인 경우에만 close 함수 호출
     if (e.target === e.currentTarget) {
@@ -24,7 +24,7 @@ const ProfileModal = ({ userId, postSEQ, handleCloseProfile }) => {
 
   return (
     <StyledApplyForm onClick={close}>
-      <Profile userId={userId} postSEQ={postSEQ} />
+      <Profile userId={userId} />
     </StyledApplyForm>
   );
 };

@@ -25,9 +25,9 @@ const NotifyList = ({ show, handleClose, ...props }) => {
     setChatRoomSEQ(null);
   };
 
-  // DetailView 모달 관리 함수
-  const closeModal = () => {
-    setIsOpen(false);
+  // 게시글 상세보기 모달 닫기 함수
+  const handleCloseDetailView = () => {
+    setPostSEQ(null);
   };
 
   // 내 알림 리스트 불러오기
@@ -41,9 +41,6 @@ const NotifyList = ({ show, handleClose, ...props }) => {
       notifyListAPI();
     }
   }, [show]);
-
-  // ChatRoom 모달이 열려 있는지 확인
-  const isChatRoomModalOpen = chatRoomSEQ !== null;
 
   return (
     <Offcanvas show={show} onHide={handleClose} {...props}>
@@ -77,23 +74,17 @@ const NotifyList = ({ show, handleClose, ...props }) => {
           </div>
         ))}
       </Offcanvas.Body>
-      {isChatRoomModalOpen && (
+      {chatRoomSEQ && (
         <ChatRoom
           chatRoomSEQ={chatRoomSEQ}
           handleCloseChatRoom={handleCloseChatRoom}
         />
       )}
-      {isOpen && (
-        <div className="Matching-modal-main">
-          <div className="Matching-modal-overlay">
-            <div className="Matching-modal">
-              <div className="close-button" onClick={closeModal}>
-                &times;
-              </div>
-              <DetailView selectedPostSEQ={postSEQ} />
-            </div>
-          </div>
-        </div>
+      {postSEQ && (
+        <DetailView
+          selectedPostSEQ={postSEQ}
+          handleCloseDetailView={handleCloseDetailView}
+        />
       )}
     </Offcanvas>
   );

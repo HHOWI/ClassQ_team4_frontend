@@ -202,11 +202,10 @@ const StyledProfile = styled.div`
   }
 `;
 
-const Profile = ({ userId, postSEQ }) => {
+const Profile = ({ userId }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userCategoryList, setUserCategoryList] = useState([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [userData, setUserData] = useState({ introduction: "" });
   const user = useSelector((state) => state.user);
   const [blockUser, setBlockUser] = useState([]);
@@ -264,12 +263,6 @@ const Profile = ({ userId, postSEQ }) => {
     blockUserAPI();
   }, [user, blockUserFetched]);
 
-  const chatDTO = {
-    id: user.id,
-    postSEQ: postSEQ,
-    applicantId: userId,
-  };
-
   const userLikeDTO = {
     likeUpUser: user.id,
     likeUpTarget: userId,
@@ -293,9 +286,8 @@ const Profile = ({ userId, postSEQ }) => {
   const handleCardClick = () => {
     setIsFlipped(!isFlipped);
   };
-  const handleImageClick = (index) => {
+  const handleImageClick = () => {
     setIsModalOpen(true);
-    setCurrentImageIndex(index);
   };
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -314,7 +306,7 @@ const Profile = ({ userId, postSEQ }) => {
                   : defaultimg
               }
               alt="User"
-              onClick={() => handleImageClick(0)}
+              onClick={handleImageClick}
             />
             <div className="ap_front_nickname">{userData?.userNickname}</div>
             <div className="ap_front_mbti_popular">
@@ -382,7 +374,6 @@ const Profile = ({ userId, postSEQ }) => {
                 ? `/uploadprofile/${userData?.profileImg}`
                 : defaultimg,
             ]}
-            index={currentImageIndex}
             close={handleModalClose}
           />
         )}

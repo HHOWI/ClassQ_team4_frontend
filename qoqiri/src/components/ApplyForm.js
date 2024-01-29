@@ -228,7 +228,6 @@ const ApplyForm = ({ userId, postSEQ }) => {
   const [userCategoryList, setUserCategoryList] = useState([]);
   const [applicantUserMatchingInfo, setApplicantUserMatchingInfo] =
     useState("");
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [userData, setUserData] = useState({ introduction: "" });
   const user = useSelector((state) => state.user);
 
@@ -262,9 +261,8 @@ const ApplyForm = ({ userId, postSEQ }) => {
   const handleCardClick = () => {
     setIsFlipped(!isFlipped);
   };
-  const handleImageClick = (index) => {
+  const handleImageClick = () => {
     setIsModalOpen(true);
-    setCurrentImageIndex(index);
   };
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -300,7 +298,7 @@ const ApplyForm = ({ userId, postSEQ }) => {
                   : defaultimg
               }
               alt="User"
-              onClick={() => handleImageClick(0)}
+              onClick={handleImageClick}
             />
             <div className="ap_front_nickname">{userData?.userNickname}</div>
             <div className="ap_front_mbti_popular">
@@ -380,7 +378,6 @@ const ApplyForm = ({ userId, postSEQ }) => {
                 ? `/uploadprofile/${userData?.profileImg}`
                 : defaultimg,
             ]}
-            index={currentImageIndex}
             close={handleModalClose}
           />
         )}
