@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
-import DetailView from "./DetailView";
 import { getCategoryTypes } from "../api/categoryType";
 import { getCategories } from "../api/category";
-import { getAttachmentsAll } from "../api/post";
-import { getCommentCount, getPlace, getPlaceType } from "../api/post";
+import { getPlace, getPlaceType } from "../api/post";
 import { getUserCategory } from "../api/category";
 import { getBlockUser } from "../api/blockuser";
 import {
@@ -14,35 +12,30 @@ import {
   getPostsByCategoryType,
 } from "../api/post";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMessage } from "@fortawesome/free-regular-svg-icons";
-import defaultimg from "../assets/defaultimg.png";
-import { formatDate24Hours } from "../utils/TimeFormat";
+
 import styled from "styled-components";
+import Post from "./Post";
 
 const StyledMatchingBoardComponent = styled.div`
-  .real-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .main {
     width: 100%;
     min-width: 1450px;
     padding-left: 240px;
     padding-bottom: 250px;
-    background-color: #ff7f38;
-  }
-  .main {
-    position: relative;
+    background-color: rgb(231, 240, 252);
     display: flex;
     flex-direction: column;
-    width: 1200px;
-    height: 100%;
-    margin: 0px auto;
-    padding-top: 40px;
+    align-items: center;
   }
 
   .select-bar {
-    border: 1px solid #ff7f38;
     display: flex;
     border-radius: 4px;
-    width: 1200px;
+    width: 100%;
     padding: 0px 10px;
     margin-bottom: 12px;
     background-color: #ffffff;
@@ -63,10 +56,10 @@ const StyledMatchingBoardComponent = styled.div`
   }
 
   .search-box {
+    width: 100%;
     display: flex;
     position: relative;
     background-color: #ffffff;
-    width: 1197px;
     padding: 5px 25px;
     border-radius: 4px;
     margin-bottom: 12px;
@@ -107,183 +100,21 @@ const StyledMatchingBoardComponent = styled.div`
     background: #ff7f38;
     color: #ffffff;
   }
-
-  .section {
+  .post_list {
+    width: 1200px;
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
-    margin: -5px -5px 5px;
-    margin-bottom: 20px;
-  }
-
-  .section .noContent {
-    width: 100%;
-    height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: xx-large;
-    margin-top: 10px;
-  }
-
-  .board {
-    background-color: #ffffff;
-    display: flex;
-    position: relative;
-    flex-direction: column;
-    border: 1px solid #ff7f38;
-    border-radius: 4px;
-    width: 393px;
-    min-height: 270px;
-    padding: 20px;
-    margin: 5px;
-  }
-
-  .board-header {
-    display: flex;
-  }
-
-  .board-header-time {
-    font-size: 7px;
-    font-weight: 660;
-    color: #ff7f38;
-    position: absolute;
-    right: 20px;
-    top: 20px;
-  }
-
-  .profile {
-    position: relative;
-    width: 44px;
-    height: 44px;
-    margin-right: 8px;
-  }
-
-  .profile img {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-  }
-
-  .titleNickname .title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    color: #000000;
-    font-weight: 800;
-    font-size: 14px;
-  }
-
-  .nickname {
-    font-size: 13px;
-    font-weight: normal;
-    color: #ff7f38;
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    width: 100%;
-    margin-top: 4px;
-  }
-
-  .board-image-main {
-    float: right;
-    min-height: 50px;
-  }
-
-  .board-image {
-    display: flex;
-    float: right;
-  }
-
-  .board-image img {
-    height: 50px;
-    width: 60px;
-    margin-right: 5px;
-  }
-
-  .titleNickname {
-    display: flex;
-    flex-direction: column;
-    margin-top: 4px;
-  }
-
-  .write-board {
-    margin-top: 20px;
-    line-height: 16px;
-    word-break: break-all;
-    height: 48px;
-  }
-
-  .write {
-    font-size: 12px;
-    font-weight: 800;
-    color: #000000;
-    line-height: 18px;
-    max-height: 100px; /* 허용할 최대 높이 설정 */
-    overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
-    text-overflow: ellipsis; /* 넘치는 텍스트를 ...으로 표시 */
-  }
-
-  .comment-count {
-    display: flex;
-    float: right;
-    gap: 5px;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .category {
-    font-weight: 600;
-    font-size: 13px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 28px;
-  }
-
-  .category span {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-    font-size: 8px;
-    line-height: 14px;
-    background: #ff7f38;
-    color: #ffffff;
-  }
-
-  .foot-place-detail {
-    position: absolute;
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    right: 20px;
-    top: 210px;
-    gap: 6px;
-  }
-
-  .foot-place-detail p {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-    font-size: 8px;
-    line-height: 14px;
-    background: #ff7f38;
-    color: #ffffff;
   }
 `;
 
 const MatchingBoardComponent = () => {
   const [posts, setPosts] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedPostSEQ, setSelectedPostSEQ] = useState(0);
   const [userCategory, setUserCategory] = useState([]);
   const [category, setCategory] = useState([]);
   const [categoryType, setCategoryType] = useState([]);
   const [selectedCatSEQ, setSelectedCatSEQ] = useState(null);
-  const [attachments, setAttachments] = useState([]);
-  const [commentCount, setCommentsCount] = useState(0);
   const [matchCate, setMatchCate] = useState([]);
   const [page, setPage] = useState(1); // 페이지 번호 추가
   const [loading, setLoading] = useState(false); // 로딩 상태 추가
@@ -299,14 +130,11 @@ const MatchingBoardComponent = () => {
   const [blockUserFetched, setBlockUserFetched] = useState(false); // 계속 가져와서 한번만 가져오도록 조건 걸음
 
   const viewCategory = () => {
-    // Filter posts based on user and matching categories
     const filteredPosts = posts.filter((post) => {
-      // Check if there is a matching category for the post
       const matchingCategory = matchCate.find(
         (match) => match.post.postSEQ === post.postSEQ
       );
 
-      // Check if the matching category belongs to the user's categories
       return (
         matchingCategory &&
         userCategory.some(
@@ -345,11 +173,6 @@ const MatchingBoardComponent = () => {
       );
       setPosts(filteredBlock);
     }
-  };
-
-  // 게시글 상세보기 모달 닫기 함수
-  const handleCloseDetailView = () => {
-    setSelectedPostSEQ(null);
   };
 
   useEffect(() => {
@@ -393,30 +216,13 @@ const MatchingBoardComponent = () => {
     setCategoryType(result.data);
   };
 
-  // 첨부한 첨부파일 불러오는 API
-  const attachmentsAPI = async () => {
-    const result = await getAttachmentsAll();
-    setAttachments(result.data);
-  };
-
   // 매칭 카테고리 인포 불러오는 API
   const matchCategoryInfoAPI = async () => {
     const result = await getMatchCategoryInfo();
     setMatchCate(result.data);
   };
 
-  const commentCountAPI = async () => {
-    const counts = [];
-    for (const post of posts) {
-      const result = await getCommentCount(post.postSEQ);
-      counts.push(result.data);
-    }
-
-    setCommentsCount(counts);
-  };
-
   // 지역으로 게시물 검색하기
-
   // place 리스트 불러오기
   const placeAPI = async () => {
     const result = await getPlace();
@@ -489,13 +295,6 @@ const MatchingBoardComponent = () => {
 
   useEffect(() => {
     matchCategoryInfoAPI();
-    attachmentsAPI(selectedPostSEQ);
-  }, [posts]);
-
-  useEffect(() => {
-    if (posts.length > 0) {
-      commentCountAPI();
-    }
   }, [posts]);
 
   useEffect(() => {
@@ -531,151 +330,58 @@ const MatchingBoardComponent = () => {
   };
   return (
     <StyledMatchingBoardComponent>
-      <div className="real-main">
-        <main className="main">
-          <div className="select-bar">
-            <div className="active-button">
-              <Link to="/matchingBoard" className="active">
-                전체보기
-              </Link>
-              {categoryType.map((cat) => (
-                <Link
-                  to={`/matchingBoard/${cat?.ctSEQ}`}
-                  className="active"
-                  key={cat?.ctSEQ}
-                >
-                  {cat?.ctName}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className="search-box">
-            <div className="place-box">
-              <h1>지역 선택</h1>
-              <select onChange={handlePlaceTypeChange}>
-                <option value="">지역을 선택해주세요</option>
-                {placeType.map((type) => (
-                  <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
-                    {type.placeTypeName}
-                  </option>
-                ))}
-              </select>
-              {selectedPlaceType && (
-                <div className="place-box">
-                  <h1>상세 지역</h1>
-                  <select onChange={handlePlaceChange}>
-                    <option value="">상세 지역을 선택해주세요</option>
-                    {filteredPlaces.map((place) => (
-                      <option key={place.placeSEQ} value={place.placeSEQ}>
-                        {place.placeName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
-            <div className="userCategory">
-              <button onClick={viewCategory}>내 관심사만 보기</button>
-            </div>
-          </div>
-          <section className="section">
-            {filteredPosts.length === 0 ? (
-              <p className="noContent">검색 결과가 없습니다.</p>
-            ) : (
-              filteredPosts?.map((po, index) => (
-                <div
-                  onClick={() => {
-                    setSelectedPostSEQ(po?.postSEQ);
-                    setIsOpen(!isOpen);
-                  }}
-                  className="board"
-                  key={po?.postSEQ}
-                >
-                  <div className="board-header-time">
-                    {formatDate24Hours(po?.postDate)}
-                  </div>
-                  <div className="board-header">
-                    <div className="profile">
-                      <img
-                        src={
-                          po?.userInfo?.profileImg
-                            ? `/uploadprofile/${po?.userInfo?.profileImg}`
-                            : defaultimg
-                        }
-                      />
-                    </div>
-                    <div className="titleNickname">
-                      <div className="title">{po?.postTitle}</div>
-                      <span className="nickname">
-                        {po?.userInfo?.userNickname}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="board-image-main">
-                    {attachments
-                      ?.filter(
-                        (attachment) => attachment.post?.postSEQ === po.postSEQ
-                      )
-                      ?.map((filterattachment, index) => (
-                        <div className="board-image" key={index}>
-                          <img
-                            src={`/upload/${filterattachment?.attachmentURL}`}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <div className="write-board">
-                    <div className="write">
-                      {po.postContent}
-                      <a href="#" className="comment-count">
-                        <FontAwesomeIcon icon={faMessage} />
-                        <div className="count">{commentCount[index]}</div>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="category">
-                    {matchCate
-                      .filter((match) => match?.post?.postSEQ === po?.postSEQ)
-                      ?.map((filteredMatch, index) => (
-                        <span key={index}>
-                          {filteredMatch?.category?.categoryName}
-                        </span>
-                      ))}
-                  </div>
-                  <div className="foot-place-detail">
-                    <p>{po?.place?.placeName}</p>
-                    <p>{po?.place?.placeType?.placeTypeName}</p>
-                  </div>
-                </div>
-              ))
-            )}
-
-            {loading && <p>Loading...</p>}
-
-            {!loading && posts.length > 0 && (
-              <button
-                onClick={loadMorePosts}
-                style={{
-                  background: "antiquewhite",
-                  color: "#ff9615",
-                  fontWeight: "bold",
-                  borderRadius: "5px",
-                  border: "none",
-                  marginLeft: "10px",
-                }}
+      <div className="main">
+        <div className="select-bar">
+          <div className="active-button">
+            <Link to="/matchingBoard" className="active">
+              전체보기
+            </Link>
+            {categoryType.map((cat) => (
+              <Link
+                to={`/matchingBoard/${cat?.ctSEQ}`}
+                className="active"
+                key={cat?.ctSEQ}
               >
-                더 보기
-              </button>
+                {cat?.ctName}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="search-box">
+          <div className="place-box">
+            <h1>지역 선택</h1>
+            <select onChange={handlePlaceTypeChange}>
+              <option value="">지역을 선택해주세요</option>
+              {placeType.map((type) => (
+                <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
+                  {type.placeTypeName}
+                </option>
+              ))}
+            </select>
+            {selectedPlaceType && (
+              <div className="place-box">
+                <h1>상세 지역</h1>
+                <select onChange={handlePlaceChange}>
+                  <option value="">상세 지역을 선택해주세요</option>
+                  {filteredPlaces.map((place) => (
+                    <option key={place.placeSEQ} value={place.placeSEQ}>
+                      {place.placeName}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
-          </section>
-        </main>
+          </div>
+          <div className="userCategory">
+            <button onClick={viewCategory}>내 관심사만 보기</button>
+          </div>
+        </div>
+        <div className="post_list">
+          {posts.map((post) => (
+            <Post key={post.postSEQ} postSEQ={post.postSEQ} />
+          ))}
+        </div>
       </div>
-      {selectedPostSEQ && (
-        <DetailView
-          selectedPostSEQ={selectedPostSEQ}
-          handleCloseDetailView={handleCloseDetailView}
-        />
-      )}
     </StyledMatchingBoardComponent>
   );
 };

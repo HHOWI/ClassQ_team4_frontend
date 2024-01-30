@@ -34,15 +34,26 @@ const StyledDetailView = styled.div`
   z-index: 20;
   background-color: rgba(0, 0, 0, 0.2);
 
+  .post_comment {
+    width: 700px;
+    height: 550px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+  }
+
+  .post_comment::-webkit-scrollbar {
+    display: none;
+  }
+
   .detail_post {
     width: 700px;
-    height: 600px;
     background-color: white;
     display: flex;
     flex-direction: column;
     position: relative;
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
   }
 
   .detail_post_top {
@@ -82,12 +93,15 @@ const StyledDetailView = styled.div`
     margin-bottom: 10px;
   }
 
-  .profile {
+  .detail_profile {
+    width: 50%;
     display: flex;
     flex-direction: row;
-    width: 200px;
-    gap: 10px;
+    gap: 15px;
     cursor: pointer;
+    img {
+      border-radius: 100px;
+    }
 
     .detail_nickname {
       font-size: 1rem;
@@ -98,8 +112,8 @@ const StyledDetailView = styled.div`
     }
   }
 
-  .post_date {
-    font-size: 0.7rem;
+  .post_place_date {
+    font-size: 0.8rem;
     margin-bottom: auto;
     color: gray;
   }
@@ -129,21 +143,15 @@ const StyledDetailView = styled.div`
     }
   }
 
-  .category_place {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    margin-top: auto;
-  }
-
   .category_list {
     display: flex;
     flex-direction: row;
     gap: 10px;
+    margin-top: auto;
   }
 
-  .detail_category,
-  .detail_place {
+  .detail_category {
+    width: fit-content;
     font-size: 0.8rem;
     font-weight: normal;
     color: white;
@@ -156,6 +164,7 @@ const StyledDetailView = styled.div`
     padding: 15px;
     display: flex;
     justify-content: space-between;
+    border-bottom: 0.5px solid #dddddd;
     .play_btn {
       width: 250px;
       height: 50px;
@@ -169,6 +178,7 @@ const StyledDetailView = styled.div`
 
   .update,
   .delete {
+    font-size: 0.8rem;
     color: gray;
     border: none;
     background-color: transparent;
@@ -298,48 +308,51 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
       }
     }
   };
-
   return (
     <StyledDetailView>
-      <div className="detail_post">
-        <div className="detail_post_top">
-          <div onClick={close}>x</div>
-        </div>
-        <div className="detail_post_body">
-          <div className="detail_post_info">
-            <div className="profile" onClick={openProfile}>
-              <img
-                src={
-                  post?.userInfo?.profileImg
-                    ? `/uploadprofile/${post?.userInfo?.profileImg}`
-                    : defaultimg
-                }
-              />
-              <div className="detail_nickname">
-                {post?.userInfo?.userNickname}
+      <div className="post_comment">
+        <div className="detail_post">
+          <div className="detail_post_top">
+            <div onClick={close}>x</div>
+          </div>
+          <div className="detail_post_body">
+            <div className="detail_post_info">
+              <div className="detail_profile" onClick={openProfile}>
+                <img
+                  src={
+                    post?.userInfo?.profileImg
+                      ? `/uploadprofile/${post?.userInfo?.profileImg}`
+                      : defaultimg
+                  }
+                />
+                <div className="detail_nickname">
+                  {post?.userInfo?.userNickname}
+                </div>
+              </div>
+              <div className="post_place_date">
+                {post?.place?.placeType?.placeTypeName} {post?.place?.placeName}{" "}
+                · {formatDate24Hours(post?.postDate)}
               </div>
             </div>
-            <div className="post_date">{formatDate24Hours(post?.postDate)}</div>
-          </div>
-          <div className="title">{post?.postTitle}</div>
-          <div className="content">{post?.postContent}</div>
-          <div className="board_image_list">
-            <div className="board_image">
-              {attachments
-                ?.filter(
-                  (attachment) => attachment.post?.postSEQ === post.postSEQ
-                )
-                ?.map((filterattachment, index) => (
-                  <img
-                    key={index}
-                    src={`/upload/${filterattachment?.attachmentURL}`}
-                    alt={`이미지 ${index + 1}`}
-                    onClick={() => openModal(index)}
-                  />
-                ))}
+            <div className="title">{post?.postTitle}</div>
+            <div className="content">{post?.postContent}</div>
+            <div className="board_image_list">
+              <div className="board_image">
+                {attachments
+                  ?.filter(
+                    (attachment) => attachment.post?.postSEQ === post.postSEQ
+                  )
+                  ?.map((filterattachment, index) => (
+                    <img
+                      key={index}
+                      src={`/upload/${filterattachment?.attachmentURL}`}
+                      alt={`이미지 ${index + 1}`}
+                      onClick={() => openModal(index)}
+                    />
+                  ))}
+              </div>
             </div>
-          </div>
-          <div className="category_place">
+
             <div className="category_list">
               {categoryList.map((category) => (
                 <div
@@ -350,26 +363,23 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
                 </div>
               ))}
             </div>
-            <div className="detail_place">
-              {post?.place?.placeType?.placeTypeName} {post?.place?.placeName}
-            </div>
           </div>
-        </div>
-        <div className="detail_button">
-          <button className="play_btn" onClick={handleApplyClick}>
-            신청
-          </button>
-          <div>
-            {user?.id === post?.userInfo?.userId ? (
-              <div className="update_delete">
-                <Link className="update" to={`/postedit/${selectedPostSEQ}`}>
-                  수정
-                </Link>
-                <button className="delete" onClick={deletePost}>
-                  삭제
-                </button>
-              </div>
-            ) : null}
+          <div className="detail_button">
+            <button className="play_btn" onClick={handleApplyClick}>
+              신청
+            </button>
+            <div>
+              {user?.id === post?.userInfo?.userId ? (
+                <div className="update_delete">
+                  <Link className="update" to={`/postedit/${selectedPostSEQ}`}>
+                    수정
+                  </Link>
+                  <button className="delete" onClick={deletePost}>
+                    삭제
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 

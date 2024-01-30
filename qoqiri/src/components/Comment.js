@@ -11,65 +11,100 @@ import { getLike, postLike, delLike } from "../api/commentLike";
 import { formatDate24Hours } from "../utils/TimeFormat";
 
 const StyledComment = styled.div`
-  width: 750px;
-  margin: 10px auto;
-  margin-bottom: 30px;
+  width: 700px;
+  background-color: white;
 
-  h2 {
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  .buttons {
-    display: flex;
-    height: 30px;
+  .comment_list {
     width: 100%;
+    padding: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .comment_top {
+    display: flex;
+    flex-direction: row;
     justify-content: space-between;
-    margin-bottom: 15px;
+    align-items: center;
+    margin-bottom: 5px;
+
+    .comment_nickname_date {
+      display: flex;
+      flex-direction: row;
+
+      .comment_nickname {
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+      .comment_date {
+        font-size: 0.75rem;
+        color: gray;
+        margin-top: auto;
+      }
+    }
+
+    .comment_like {
+      display: flex;
+      flex-direction: row;
+      gap: 5px;
+      align-items: center;
+
+      .comment_like_icon {
+        margin: auto;
+        color: red;
+        padding: 3px;
+        cursor: pointer;
+        border-radius: 50px;
+      }
+
+      .comment_like_icon:hover {
+        background-color: #dddddd;
+      }
+
+      .comment_like_count {
+        margin: auto;
+        font-size: 0.9rem;
+        font-weight: bold;
+      }
+    }
   }
-  .comment-button {
-    background: #ff7f38;
-    color: white;
-    border-radius: 5px;
-    padding: 5px 10px;
-    height: 25px;
-    margin-left: 10px;
+
+  .comment_and_button {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ededed;
+  }
+
+  .comment_info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .comment_content {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    color: rgb(49, 49, 49);
+  }
+
+  .comment_button_list {
+    margin-left: auto;
+  }
+
+  .comment_button {
+    background-color: transparent;
+    color: #aaaaaa;
     border-style: none;
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 0.8rem;
   }
 
-  .buttonFlex {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .like {
-    cursor: pointer;
-    color: #ff9326;
-  }
-  .like:hover {
-    color: #ff7200;
-  }
-  .like-count {
-    display: flex;
-    gap: 6px;
-  }
-  .like-count {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 750;
-  }
-
-  .spanButton {
-    display: flex;
-  }
-  .spanButton span {
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .comment_button:hover {
+    color: gray;
+    text-decoration: underline;
   }
 `;
 
@@ -176,49 +211,58 @@ const Comment = ({ comment }) => {
 
   return (
     <StyledComment>
-      <h2>@{comment.userInfo.userNickname}</h2>
-      <div className="buttons">
-        <div className="spanButton">
-          <span
-            contentEditable="true"
-            suppressContentEditableWarning
-            ref={contentRef}
-            onBlur={handleBlur}
-          >
-            {content}
-          </span>
-          <div className="buttonFlex">
-            <button className="comment-button" onClick={onClick}>
-              <p>답글</p>
-            </button>
-            <button className="comment-button" onClick={onUpdate}>
-              댓글 수정
-            </button>
-            <button className="comment-button" onClick={onDelete}>
-              댓글 삭제
-            </button>
+      <div className="comment_list">
+        <div className="comment_top">
+          <div className="comment_nickname_date">
+            <div className="comment_nickname">
+              {comment.userInfo.userNickname}
+            </div>
+            <div className="comment_date">
+              {formatDate24Hours(comment.commentDate)}
+            </div>
+          </div>
+          <div className="comment_like">
+            <div className="comment_like_icon">
+              {liked ? ( // liked 상태에 따라 아이콘 변경
+                <FontAwesomeIcon
+                  icon={solidThumbsUp}
+                  className="like"
+                  onClick={toggleLike}
+                />
+              ) : (
+                <FontAwesomeIcon
+                  icon={faThumbsUp}
+                  className="like"
+                  onClick={toggleLike}
+                />
+              )}
+            </div>
+            <div className="comment_like_count">{like}</div>
           </div>
         </div>
-        <div className="like-count">
-          <div className="like-count">
-            {formatDate24Hours(comment.commentDate)}
-          </div>
-          <div className="like-count">
-            {liked ? ( // liked 상태에 따라 아이콘 변경
-              <FontAwesomeIcon
-                icon={solidThumbsUp}
-                className="like"
-                onClick={toggleLike}
-              />
-            ) : (
-              <FontAwesomeIcon
-                icon={faThumbsUp}
-                className="like"
-                onClick={toggleLike}
-              />
-            )}
-            {like}
-            {/* 좋아요 수 렌더링 */}
+
+        <div className="comment_and_button">
+          <div className="comment_info">
+            <div
+              className="comment_content"
+              contentEditable="true"
+              suppressContentEditableWarning
+              ref={contentRef}
+              onBlur={handleBlur}
+            >
+              {content}
+            </div>
+            <div className="comment_button_list">
+              <button className="comment_button" onClick={onClick}>
+                답글
+              </button>
+              <button className="comment_button" onClick={onUpdate}>
+                수정
+              </button>
+              <button className="comment_button" onClick={onDelete}>
+                삭제
+              </button>
+            </div>
           </div>
         </div>
       </div>

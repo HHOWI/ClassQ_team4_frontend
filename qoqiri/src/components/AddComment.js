@@ -2,37 +2,53 @@ import { addComment } from "../store/commentSlice";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
-import { faArrowUpWideShort } from "@fortawesome/free-solid-svg-icons";
 
 const StyledAddComment = styled.form`
-  text-align: center;
-  margin: 20px;
+  width: 100%;
+  padding: 15px;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+
+  .add_comment {
+    width: 100%;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dddddd;
+    border-radius: 20px;
+  }
 
   &.active {
     display: none;
   }
 
-  input[type="text"] {
-    width: 89%;
+  .add_box {
+    width: 80%;
+    min-height: 60%;
+    padding: 10px;
+    background-color: #eeeeee;
     border: none;
-    border-bottom: 1px solid #ddd;
-    height: 7vh;
-    font-size: 1rem;
-    font-weight: 700;
+    border-bottom: 1px solid #dddddd;
+    color: rgb(49, 49, 49);
+    font-size: 0.9rem;
+    font-weight: bold;
     border-radius: 5px;
+    outline-color: #ff7f38;
+    resize: none;
   }
 
-  input[type="submit"] {
+  .add_btn {
+    width: 80px;
+    height: 60%;
     background: #ff7f38;
     border-style: none;
     color: white;
     border-radius: 5px;
-    margin: 10px;
-    padding: 5px 10px;
-    height: 25px;
-    margin-left: 10px;
-    font-size: 10px;
-    font-weight: 700;
+    margin-left: 5px;
+    font-size: 0.9rem;
+    font-weight: bold;
   }
 `;
 
@@ -66,8 +82,9 @@ const AddComment = ({ code, active, parent }) => {
   return (
     <StyledAddComment onSubmit={onSubmit} className={active ? "active" : ""}>
       {isLoggedIn ? (
-        <>
-          <input
+        <div className="add_comment">
+          <textarea
+            className="add_box"
             type="text"
             value={comment}
             placeholder="댓글을 달아 원하는 끼리를 찾아보세요."
@@ -75,10 +92,12 @@ const AddComment = ({ code, active, parent }) => {
               setComment(e.target.value);
             }}
           />
-          <input type="submit" value="댓글" />
-        </>
+          <input className="add_btn" type="submit" value="댓글" />
+        </div>
       ) : (
-        <p>댓글을 작성하려면 로그인이 필요합니다.</p>
+        <div className="please_login">
+          댓글을 작성하려면 로그인이 필요합니다.
+        </div>
       )}
     </StyledAddComment>
   );
