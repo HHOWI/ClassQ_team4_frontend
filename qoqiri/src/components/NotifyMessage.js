@@ -53,7 +53,7 @@ const StyledDiv = styled.div`
     position: relative;
     display: flex;
     overflow: hidden;
-    z-index: 15;
+    z-index: 25;
     animation: ${fadeOutAnimation} 2s ease-out 3s forwards;
   }
 

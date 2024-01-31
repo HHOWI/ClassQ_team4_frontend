@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Imgmodal from "./imgmodal";
-import { getUser } from "../api/user";
 import defaultimg from "../assets/defaultimg.png";
 import { useSelector } from "react-redux";
 import {
@@ -11,6 +9,7 @@ import {
 import styled from "styled-components";
 import { getUserCategory } from "../api/category";
 import { formatDate24Hours } from "../utils/TimeFormat";
+import ProfileImgModal from "./ProfileImgModal";
 
 const StyledApplyForm = styled.div`
   .ap_container {
@@ -77,8 +76,8 @@ const StyledApplyForm = styled.div`
   }
 
   .ap_front_nickname {
-    font-size: 2rem;
-    margin-bottom: 5px;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
     color: rgb(49, 49, 49);
   }
 
@@ -222,50 +221,28 @@ const StyledApplyForm = styled.div`
   }
 `;
 
-const ApplyForm = ({ userId, postSEQ }) => {
+const ApplyForm = ({ userInfo, postSEQ }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userCategoryList, setUserCategoryList] = useState([]);
   const [applicantUserMatchingInfo, setApplicantUserMatchingInfo] =
     useState("");
-  const [userData, setUserData] = useState({ introduction: "" });
   const user = useSelector((state) => state.user);
 
   const DTO = {
     id: user.id,
     postSEQ: postSEQ,
-    applicantId: userId,
-  };
-
-  const getUserAPI = async () => {
-    const result = await getUser(userId);
-    setUserData(result.data);
+    applicantId: userInfo.userId,
   };
 
   const getUserCategoryAPI = async () => {
-    const result = await getUserCategory(userId);
+    const result = await getUserCategory(userInfo.userId);
     setUserCategoryList(result.data);
   };
 
   const getApplicantUserMatchingInfoAPI = async () => {
-    const result = await getApplicantUserMatchingInfo(postSEQ, userId);
+    const result = await getApplicantUserMatchingInfo(postSEQ, userInfo.userId);
     setApplicantUserMatchingInfo(result.data);
-  };
-
-  useEffect(() => {
-    getUserAPI();
-    getUserCategoryAPI();
-    getApplicantUserMatchingInfoAPI();
-  }, [userId]);
-
-  const handleCardClick = () => {
-    setIsFlipped(!isFlipped);
-  };
-  const handleImageClick = () => {
-    setIsModalOpen(true);
-  };
-  const handleModalClose = () => {
-    setIsModalOpen(false);
   };
 
   const matchingAcceptAPI = () => {
@@ -276,6 +253,21 @@ const ApplyForm = ({ userId, postSEQ }) => {
     hideMachingUser(DTO);
     window.location.reload();
   };
+
+  const handleCardFlip = () => {
+    setIsFlipped(!isFlipped);
+  };
+  const handleOpenProfileImage = () => {
+    setIsModalOpen(true);
+  };
+  const handleCloseProfileImage = () => {
+    setIsModalOpen(false);
+  };
+
+  useEffect(() => {
+    getUserCategoryAPI();
+    getApplicantUserMatchingInfoAPI();
+  }, [userInfo]);
 
   return (
     <StyledApplyForm>
@@ -293,25 +285,25 @@ const ApplyForm = ({ userId, postSEQ }) => {
             <img
               className="ap_main_image"
               src={
-                userData?.profileImg
-                  ? `/uploadprofile/${userData?.profileImg}`
+                userInfo?.profileImg
+                  ? `/uploadprofile/${userInfo?.profileImg}`
                   : defaultimg
               }
               alt="User"
-              onClick={handleImageClick}
+              onClick={handleOpenProfileImage}
             />
-            <div className="ap_front_nickname">{userData?.userNickname}</div>
+            <div className="ap_front_nickname">{userInfo?.userNickname}</div>
             <div className="ap_front_mbti_popular">
               <div className="ap_front_mbti">
-                {userData?.mbti !== null ? userData?.mbti : "비공개"}
+                {userInfo?.mbti !== null ? userInfo?.mbti : "비공개"}
               </div>
               <div className="ap_front_popular">
-                인기도 {userData?.popularity}
+                인기도 {userInfo?.popularity}
               </div>
             </div>
-            <div className="ap_front_text">{userData?.statusMessage}</div>
+            <div className="ap_front_text">{userInfo?.statusMessage}</div>
             <div className="ap_front_Btn">
-              <button className="ap_front_infoBtn" onClick={handleCardClick}>
+              <button className="ap_front_infoBtn" onClick={handleCardFlip}>
                 상세 프로필
               </button>
               <button className="ap_front_applyBtn" onClick={matchingAcceptAPI}>
@@ -333,16 +325,16 @@ const ApplyForm = ({ userId, postSEQ }) => {
             <div className="ap_back_body">
               <div className="ap_back_age_gender">
                 <div className="ap_back_age">
-                  나이 {userData?.age !== null ? userData?.age : "비공개"}
+                  나이 {userInfo?.age !== null ? userInfo?.age : "비공개"}
                 </div>
                 <div className="ap_back_gender">
-                  성별 {userData?.gender !== null ? userData?.gender : "비공개"}
+                  성별 {userInfo?.gender !== null ? userInfo?.gender : "비공개"}
                 </div>
               </div>
               <div className="ap_back_place">
                 지역{" "}
-                {userData?.placeType?.placeTypeName !== null
-                  ? userData?.placeType?.placeTypeName
+                {userInfo?.placeType?.placeTypeName !== null
+                  ? userInfo?.placeType?.placeTypeName
                   : "비공개"}
               </div>
               <div className="ap_back_category">
@@ -360,7 +352,7 @@ const ApplyForm = ({ userId, postSEQ }) => {
               </div>
             </div>
             <div className="ap_back_Btn">
-              <button className="ap_back_infoBtn" onClick={handleCardClick}>
+              <button className="ap_back_infoBtn" onClick={handleCardFlip}>
                 기본 프로필
               </button>
               <button className="ap_back_applyBtn" onClick={matchingAcceptAPI}>
@@ -372,13 +364,13 @@ const ApplyForm = ({ userId, postSEQ }) => {
           </div>
         </div>
         {isModalOpen && (
-          <Imgmodal
+          <ProfileImgModal
             images={[
-              userData?.profileImg
-                ? `/uploadprofile/${userData?.profileImg}`
+              userInfo?.profileImg
+                ? `/uploadprofile/${userInfo?.profileImg}`
                 : defaultimg,
             ]}
-            close={handleModalClose}
+            handleCloseProfileImage={handleCloseProfileImage}
           />
         )}
       </div>

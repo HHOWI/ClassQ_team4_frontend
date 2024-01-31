@@ -49,6 +49,7 @@ const StyledMatchingBoardComponent = styled.div`
     color: #4d391c;
     border-style: none;
     font-weight: 700;
+    transition: color 0.2s ease;
   }
 
   .select-bar a:hover {
@@ -95,7 +96,7 @@ const StyledMatchingBoardComponent = styled.div`
     border-radius: 4px;
     border-style: none;
     font-weight: 800;
-    font-size: 10px;
+    font-size: 1rem;
     line-height: 14px;
     background: #ff7f38;
     color: #ffffff;
@@ -373,7 +374,9 @@ const MatchingBoardComponent = () => {
             )}
           </div>
           <div className="userCategory">
-            <button onClick={viewCategory}>내 관심사만 보기</button>
+            <button className="userCategory" onClick={viewCategory}>
+              내 관심사만 보기
+            </button>
           </div>
         </div>
         <div className="post_list">

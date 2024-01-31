@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
 import defaultimg from "../assets/defaultimg.png";
-import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { Carousel } from "react-responsive-carousel";
 import styled from "styled-components";
-import {
-  editPostAPI,
-  getAttachments,
-  getPost,
-  deletePost,
-  getMatchCate,
-} from "../api/post";
+import { getAttachments, getPost, getMatchCate, deletePost } from "../api/post";
 import { viewComments } from "../store/commentSlice";
 import { useSelector, useDispatch } from "react-redux";
 import AddComment from "../components/AddComment";
@@ -20,6 +12,7 @@ import { asyncChatRooms } from "../store/chatRoomSlice";
 import { formatDate24Hours } from "../utils/TimeFormat";
 import ProfileModal from "./ProfileModal";
 import { Link } from "react-router-dom";
+import ImageModal from "./ImageModal";
 
 const StyledDetailView = styled.div`
   position: fixed;
@@ -61,7 +54,6 @@ const StyledDetailView = styled.div`
     height: 25px;
     background-color: #ff7f38;
     position: fixed;
-    z-index: 5;
     display: flex;
     justify-content: flex-end;
     padding-right: 8px;
@@ -77,7 +69,7 @@ const StyledDetailView = styled.div`
 
   .detail_post_body {
     width: 100%;
-    height: 300px;
+    min-height: 380px;
     padding: 15px;
     padding-top: 35px;
     display: flex;
@@ -129,25 +121,36 @@ const StyledDetailView = styled.div`
 
   .content {
     width: 100%;
-    height: 100px;
+    min-height: 60px;
+    margin-bottom: 20px;
     color: rgb(49, 49, 49);
+    line-height: 18px;
   }
 
-  .board_image_list {
+  .detail_image_list {
     width: 100%;
+    height: 130px;
     display: flex;
     flex-direction: row;
-    margin-left: auto;
-    gap: 10px;
-    .board_image {
+    gap: 3px;
+    margin-bottom: 10px;
+    justify-content: flex-end;
+    img {
+      width: 20%;
+      height: 100%;
+      border-radius: 10px;
+      object-fit: cover;
+      cursor: pointer;
     }
   }
 
   .category_list {
+    width: 100%;
     display: flex;
     flex-direction: row;
     gap: 10px;
     margin-top: auto;
+    flex-wrap: wrap;
   }
 
   .detail_category {
@@ -170,10 +173,15 @@ const StyledDetailView = styled.div`
       height: 50px;
       color: rgb(49, 49, 49);
       font-weight: bold;
-      background-color: #dfdfdfdf;
+      background-color: #ededed;
+      transition: background-color 0.2s ease;
       border: none;
       border-radius: 10px;
     }
+  }
+
+  .play_btn:hover {
+    background-color: #dddddd;
   }
 
   .update,
@@ -185,17 +193,17 @@ const StyledDetailView = styled.div`
     margin-left: 10px;
   }
 
-  .carousel img {
-    height: 500px;
-    padding: 30px;
+  .update:hover,
+  .delete:hover {
+    text-decoration: underline;
   }
 `;
 
 const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [post, setPost] = useState({});
-  const [attachments, setAttachments] = useState([]);
+  const [attachmentList, setAttachmentList] = useState([]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const dispatch = useDispatch();
@@ -209,7 +217,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
   // 첨부파일 API
   const getAttachmentsAPI = async () => {
     const result = await getAttachments(selectedPostSEQ);
-    setAttachments(result.data);
+    setAttachmentList(result.data);
   };
 
   const getMatchingCategoryInfoAPI = async () => {
@@ -237,19 +245,19 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
     return state.comment;
   });
 
-  // 게시물 카드 오픈
-  const openModal = (imageIndex) => {
-    setSelectedImageIndex(imageIndex);
-    setIsModalOpen(true);
+  // 게시물 이미지 오픈
+  const handleOpenImage = (index) => {
+    setSelectedImageIndex(index);
+    setIsImageModalOpen(true);
   };
 
-  // 게시물 카드 클로즈
-  const closeModal = () => {
+  // 게시물 이미지 클로즈
+  const handleCloseImage = () => {
     setSelectedImageIndex(0);
-    setIsModalOpen(false);
+    setIsImageModalOpen(false);
   };
 
-  const deletePost = () => {
+  const deletePostAPI = () => {
     deletePost(selectedPostSEQ);
     alert("게시물이 삭제됐습니다.");
     window.location.reload();
@@ -336,21 +344,16 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
             </div>
             <div className="title">{post?.postTitle}</div>
             <div className="content">{post?.postContent}</div>
-            <div className="board_image_list">
-              <div className="board_image">
-                {attachments
-                  ?.filter(
-                    (attachment) => attachment.post?.postSEQ === post.postSEQ
-                  )
-                  ?.map((filterattachment, index) => (
-                    <img
-                      key={index}
-                      src={`/upload/${filterattachment?.attachmentURL}`}
-                      alt={`이미지 ${index + 1}`}
-                      onClick={() => openModal(index)}
-                    />
-                  ))}
-              </div>
+
+            <div className="detail_image_list">
+              {attachmentList.map((attachment, index) => (
+                <img
+                  key={attachment.postAttachmentSEQ}
+                  src={`/upload/${attachment?.attachmentURL}`}
+                  alt={`이미지 ${index + 1}`}
+                  onClick={() => handleOpenImage(index)}
+                />
+              ))}
             </div>
 
             <div className="category_list">
@@ -374,7 +377,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
                   <Link className="update" to={`/postedit/${selectedPostSEQ}`}>
                     수정
                   </Link>
-                  <button className="delete" onClick={deletePost}>
+                  <button className="delete" onClick={deletePostAPI}>
                     삭제
                   </button>
                 </div>
@@ -384,60 +387,17 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
         </div>
 
         <AddComment code={post !== null ? post.postSEQ : null} />
-        {comments
-          .filter((comment) => comment.commentDelete === "N")
-          .map((comment) => (
-            <Comment key={comment.commentsSEQ} comment={comment} />
-          ))}
+        {comments.map((comment) => (
+          <Comment key={comment.commentsSEQ} comment={comment} />
+        ))}
       </div>
 
-      {isModalOpen && (
-        <div className="Matching-modal-overlay">
-          <div className="Matching-modal">
-            <div
-              onClick={() => {
-                if (selectedImageIndex > 0) {
-                  setSelectedImageIndex(selectedImageIndex - 1);
-                }
-              }}
-              className="arrow-button left-arrow"
-            >
-              &lt;
-            </div>
-            <Carousel
-              showArrows={false}
-              selectedItem={selectedImageIndex}
-              dynamicHeight={true}
-              showThumbs={false}
-            >
-              {attachments
-                ?.filter(
-                  (attachment) => attachment.post?.postSEQ === post.postSEQ
-                )
-                ?.map((filterattachment, index) => (
-                  <div key={index}>
-                    <img
-                      src={`/upload/${filterattachment?.attachmentURL}`}
-                      alt={`이미지 ${index + 1}`}
-                    />
-                  </div>
-                ))}
-            </Carousel>
-            <div
-              onClick={() => {
-                if (selectedImageIndex < attachments?.length - 1) {
-                  setSelectedImageIndex(selectedImageIndex + 1);
-                }
-              }}
-              className="arrow-button right-arrow"
-            >
-              &gt;
-            </div>
-          </div>
-          <div onClick={closeModal} className="close-button">
-            &times;
-          </div>
-        </div>
+      {isImageModalOpen && (
+        <ImageModal
+          index={selectedImageIndex}
+          attachmentList={attachmentList}
+          handleCloseImage={handleCloseImage}
+        />
       )}
       {isProfileModalOpen && (
         <ProfileModal

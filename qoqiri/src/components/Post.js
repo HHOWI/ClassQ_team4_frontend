@@ -20,7 +20,6 @@ const StyledPost = styled.div`
   border: 1px solid #efefef;
   border-radius: 15px;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
 
   .post_body {
     width: 100%;
@@ -28,6 +27,13 @@ const StyledPost = styled.div`
     padding: 10px;
     display: flex;
     flex-direction: column;
+    border-radius: 15px;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+  }
+
+  .post_body:hover {
+    background-color: #eeeeee;
   }
 
   .post_top {
@@ -88,7 +94,19 @@ const StyledPost = styled.div`
     justify-content: space-between;
     gap: 10px;
 
-    .board_image {
+    .post_image_list {
+      width: 310px;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      gap: 3px;
+
+      img {
+        width: 30%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+      }
     }
 
     .post_comment_count {
@@ -107,18 +125,16 @@ const StyledPost = styled.div`
     flex-direction: row;
     gap: 10px;
     margin-top: auto;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
-  .post_category,
-  .post_place {
+  .post_category {
     font-size: 0.8rem;
     color: white;
-    padding: 5px;
+    padding: 4px;
     border-radius: 10px;
     background-color: #ff7f38;
-  }
-  .post_place {
-    width: fit-content;
   }
 `;
 
@@ -128,16 +144,6 @@ const Post = ({ postSEQ }) => {
   const [attachmentList, setAttachmentList] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
   const [commentCount, setCommentsCount] = useState(0);
-
-  // 게시글 상세보기 모달 열기 함수
-  const handleOpenDetailView = () => {
-    setIsDetailViewOpen(true);
-  };
-
-  // 게시글 상세보기 모달 닫기 함수
-  const handleCloseDetailView = () => {
-    setIsDetailViewOpen(false);
-  };
 
   const getPostAPI = async () => {
     const result = await getPost(postSEQ);
@@ -157,6 +163,16 @@ const Post = ({ postSEQ }) => {
   const commentCountAPI = async () => {
     const result = await getCommentCount(postSEQ);
     setCommentsCount(result.data);
+  };
+
+  // 게시글 상세보기 모달 열기 함수
+  const handleOpenDetailView = () => {
+    setIsDetailViewOpen(true);
+  };
+
+  // 게시글 상세보기 모달 닫기 함수
+  const handleCloseDetailView = () => {
+    setIsDetailViewOpen(false);
   };
 
   useEffect(() => {
@@ -188,21 +204,16 @@ const Post = ({ postSEQ }) => {
         <div className="post_title">{post?.postTitle}</div>
         <div className="post_image_comment">
           <div className="post_image_list">
-            {attachmentList
-              ?.filter(
-                (attachment) => attachment.post?.postSEQ === post.postSEQ
-              )
-              ?.map((filterattachment, index) => (
-                <img
-                  key={index}
-                  src={`/upload/${filterattachment?.attachmentURL}`}
-                  alt={`이미지 ${index + 1}`}
-                />
-              ))}
+            {attachmentList.map((attachment) => (
+              <img
+                key={attachment.postAttachmentSEQ}
+                src={`/upload/${attachment?.attachmentURL}`}
+              />
+            ))}
           </div>
           <div className="post_comment_count">
             <FontAwesomeIcon icon={faMessage} />
-            <div className="count">{commentCount}</div>
+            {commentCount > 0 && <div className="count">{commentCount}</div>}
           </div>
         </div>
         <div className="category_list">

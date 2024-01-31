@@ -63,6 +63,7 @@ const Box = styled.div`
   .comment_content {
     overflow-wrap: break-word;
     word-wrap: break-word;
+    line-height: 18px;
   }
 
   .comment_button_list {

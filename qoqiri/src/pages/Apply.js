@@ -146,10 +146,7 @@ const Apply = () => {
           {appliedUsers.map((userInfo) => (
             <section className="ap-section" key={userInfo.matchingUserInfoSeq}>
               <div className=".apply-form">
-                <ApplyForm
-                  userId={userInfo.userInfo.userId}
-                  postSEQ={postSEQ}
-                />
+                <ApplyForm userInfo={userInfo.userInfo} postSEQ={postSEQ} />
               </div>
             </section>
           ))}

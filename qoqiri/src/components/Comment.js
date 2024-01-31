@@ -89,6 +89,7 @@ const StyledComment = styled.div`
     overflow-wrap: break-word;
     word-wrap: break-word;
     color: rgb(49, 49, 49);
+    line-height: 18px;
   }
 
   .comment_button_list {
@@ -237,7 +238,7 @@ const Comment = ({ comment }) => {
                 />
               )}
             </div>
-            <div className="comment_like_count">{like}</div>
+            {like > 0 && <div className="comment_like_count">{like}</div>}
           </div>
         </div>
 

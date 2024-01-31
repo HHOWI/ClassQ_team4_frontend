@@ -49,6 +49,11 @@ const StyledSidebar = styled.div`
     padding-bottom: 15px;
     color: rgb(49, 49, 49);
     cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .post_item:hover {
+    color: #ff7f38;
   }
 
   .post_title {
