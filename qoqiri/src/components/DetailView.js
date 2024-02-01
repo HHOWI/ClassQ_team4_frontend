@@ -169,7 +169,7 @@ const StyledDetailView = styled.div`
     justify-content: space-between;
     border-bottom: 0.5px solid #dddddd;
     .play_btn {
-      width: 250px;
+      width: 400px;
       height: 50px;
       color: rgb(49, 49, 49);
       font-weight: bold;
@@ -177,6 +177,10 @@ const StyledDetailView = styled.div`
       transition: background-color 0.2s ease;
       border: none;
       border-radius: 10px;
+    }
+
+    .update_delete {
+      margin-top: auto;
     }
   }
 
@@ -226,7 +230,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
   };
 
   // 프로필카드 모달 여는 함수
-  const openProfile = () => {
+  const handleOpenProfile = () => {
     setIsProfileModalOpen(true);
   };
 
@@ -325,7 +329,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
           </div>
           <div className="detail_post_body">
             <div className="detail_post_info">
-              <div className="detail_profile" onClick={openProfile}>
+              <div className="detail_profile" onClick={handleOpenProfile}>
                 <img
                   src={
                     post?.userInfo?.profileImg
@@ -371,18 +375,16 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
             <button className="play_btn" onClick={handleApplyClick}>
               신청
             </button>
-            <div>
-              {user?.id === post?.userInfo?.userId ? (
-                <div className="update_delete">
-                  <Link className="update" to={`/postedit/${selectedPostSEQ}`}>
-                    수정
-                  </Link>
-                  <button className="delete" onClick={deletePostAPI}>
-                    삭제
-                  </button>
-                </div>
-              ) : null}
-            </div>
+            {user?.id === post?.userInfo?.userId ? (
+              <div className="update_delete">
+                <Link className="update" to={`/postedit/${selectedPostSEQ}`}>
+                  수정
+                </Link>
+                <button className="delete" onClick={deletePostAPI}>
+                  삭제
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
 

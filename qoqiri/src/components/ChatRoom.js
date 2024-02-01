@@ -4,6 +4,7 @@ import { Client } from "@stomp/stompjs";
 import {
   getChatMessage,
   getChatRoomInfo,
+  getChatRoomUserList,
   getUserChatRoomInfo,
   joinMessage,
   leaveChatroom,
@@ -13,6 +14,8 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUp } from "@fortawesome/free-solid-svg-icons";
 import { formatSendTime } from "../utils/TimeFormat";
+import defaultimg from "../assets/defaultimg.png";
+import ProfileModal from "./ProfileModal";
 
 const StyledChatRoom = styled.div`
   position: fixed;
@@ -28,7 +31,7 @@ const StyledChatRoom = styled.div`
   background-color: rgba(0, 0, 0, 0.2);
 
   .chatroom {
-    width: 850px;
+    width: 900px;
     height: 700px;
     background-color: white;
     display: flex;
@@ -67,20 +70,22 @@ const StyledChatRoom = styled.div`
   }
 
   .room_body {
-    width: 842px;
+    width: 100%;
     height: 594px;
-    overflow-y: scroll;
     display: flex;
-    justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     padding-left: 10px;
-    padding-right: 10px;
   }
 
   .chat_list {
+    width: 75%;
+    height: 100%;
     margin-top: auto;
-    width: 100%;
     max-height: -webkit-fill-available;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    padding-right: 10px;
   }
 
   .chat_list_item {
@@ -109,11 +114,39 @@ const StyledChatRoom = styled.div`
     color: #808080;
     align-items: flex-end;
   }
+
   .message {
     width: 100%;
     color: rgb(49, 49, 49);
     white-space: normal;
     line-height: 18px;
+  }
+
+  .chat_user_list {
+    width: 25%;
+    color: rgb(49, 49, 49);
+    padding: 15px;
+    border-left: 2px solid #ff7f38;
+    cursor: pointer;
+
+    .chat_user_info {
+      width: 100%;
+      color: rgb(49, 49, 49);
+      font-size: 1.1rem;
+      font-weight: bold;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #dddddd;
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+
+      .chat_user_img {
+        width: 50px;
+        border-radius: 50%;
+      }
+    }
   }
 
   .room_footer {
@@ -145,25 +178,30 @@ const StyledChatRoom = styled.div`
     align-items: center;
   }
 
-  .room_body::-webkit-scrollbar {
+  .chat_list::-webkit-scrollbar {
     width: 6px; /* 스크롤바 너비 조절 */
   }
 
-  .room_body::-webkit-scrollbar-thumb {
+  .chat_list::-webkit-scrollbar-thumb {
     background-color: rgb(214, 214, 214);
     border-radius: 2px; /* 스크롤바 둥글게 만들기 */
   }
 
-  .room_body::-webkit-scrollbar-thumb:hover {
+  .chat_list::-webkit-scrollbar-thumb:hover {
     background-color: rgb(200, 200, 200); /* 스크롤바 호버 시 색상 변경 */
   }
 `;
 
 const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   const [chatRoomInfo, setChatRoomInfo] = useState({});
+  const [myChatRoomInfo, setMyChatRoomInfo] = useState({});
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loadMessage, setLoadMessage] = useState([]);
+  const [chatRoomUserList, setChatRoomUserList] = useState([]);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState("");
+
   const stompClient = useRef(null);
   const user = useSelector((state) => state.user);
 
@@ -187,13 +225,31 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   // 현재 채팅방에 참여한 유저정보중 내 정보 받아오기(최초접속 확인용)
   const userChatRoomInfoAPI = async () => {
     const result = await getUserChatRoomInfo(user.id, chatRoomSEQ);
-    return result.data;
+    setMyChatRoomInfo(result.data);
+  };
+
+  // 채팅방 참여자 명단 가져오기
+  const getChatRoomUserListAPI = async () => {
+    const result = await getChatRoomUserList(chatRoomSEQ);
+    setChatRoomUserList(result.data);
   };
 
   // 메세지 발송, 채팅방 참여시 스크롤 하단이동(최하단 요소부터 노출)
   const scrollToBottom = () => {
     const chatContainer = document.getElementById("app");
     chatContainer.scrollTop = chatContainer.scrollHeight;
+  };
+
+  // 프로필카드 모달 여는 함수
+  const handleOpenProfile = (userId) => {
+    setSelectedUser(userId);
+    setIsProfileModalOpen(true);
+  };
+
+  // 프로필카드 모달 닫는 함수
+  const handleCloseProfile = () => {
+    setSelectedUser(null);
+    setIsProfileModalOpen(false);
   };
 
   //메세지정보 서버로 전송
@@ -261,8 +317,9 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   useEffect(() => {
     chatRoomInfoAPI();
     chatMessageAPI();
+    userChatRoomInfoAPI();
+    getChatRoomUserListAPI();
 
-    const currentTime = new Date();
     const socket = new SockJS("http://localhost:8080/ws/chat");
     stompClient.current = new Client({
       webSocketFactory: () => socket,
@@ -272,41 +329,41 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
       heartbeatOutgoing: 4000,
     });
 
-    // 무조건 유저의 채팅방 정보를 받아온 뒤에 작동해야됨!
-    // 특정 주소 구독처리(채팅방 구현)
-    userChatRoomInfoAPI().then((userChatRoomInfo) => {
-      stompClient.current.onConnect = () => {
-        stompClient.current.subscribe(
-          `/sub/chat/room/${chatRoomSEQ}`,
-          (message) => {
-            const recv = JSON.parse(message.body);
-            recvMessage(recv);
-          }
-        );
+    stompClient.current.activate();
 
-        if (userChatRoomInfo.joinMessageSent == "N") {
-          stompClient.current.publish({
-            destination: "/pub/chat/message",
-            body: JSON.stringify({
-              nickname: user.nickname,
-              chatRoomSEQ: chatRoomSEQ,
-              message: user.nickname + "님이 채팅에 참여하였습니다.",
-              sendTime: currentTime.toISOString(),
-            }),
-          });
-          joinMessage(chatDTO);
-        }
-      };
-
-      stompClient.current.activate();
-
-      return () => {
-        if (stompClient.current && stompClient.current.active) {
-          stompClient.current.deactivate();
-        }
-      };
-    });
+    return () => {
+      if (stompClient.current && stompClient.current.active) {
+        stompClient.current.deactivate();
+      }
+    };
   }, [user, chatRoomSEQ]);
+
+  useEffect(() => {
+    // 특정 주소 구독처리(채팅방 구현)
+    const currentTime = new Date();
+    stompClient.current.onConnect = () => {
+      stompClient.current.subscribe(
+        `/sub/chat/room/${chatRoomSEQ}`,
+        (message) => {
+          const recv = JSON.parse(message.body);
+          recvMessage(recv);
+        }
+      );
+
+      if (myChatRoomInfo.joinMessageSent == "N") {
+        stompClient.current.publish({
+          destination: "/pub/chat/message",
+          body: JSON.stringify({
+            nickname: user.nickname,
+            chatRoomSEQ: chatRoomSEQ,
+            message: user.nickname + "님이 채팅에 참여하였습니다.",
+            sendTime: currentTime.toISOString(),
+          }),
+        });
+        joinMessage(chatDTO);
+      }
+    };
+  }, [myChatRoomInfo]);
 
   return (
     <StyledChatRoom>
@@ -325,8 +382,8 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
           </div>
         </div>
 
-        <div className="room_body" id="app">
-          <div className="chat_list">
+        <div className="room_body">
+          <div className="chat_list" id="app">
             {loadMessage.map((msg) => (
               <div className="chat_list_item" key={msg?.chatMessageSEQ}>
                 <div className="chat_list_header">
@@ -347,6 +404,27 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
                   </div>
                 </div>
                 <div className="message">{msg.message}</div>
+              </div>
+            ))}
+          </div>
+          <div className="chat_user_list">
+            {chatRoomUserList.map((member) => (
+              <div
+                className="chat_user_info"
+                key={member.userChatRoomInfoSeq}
+                onClick={() => handleOpenProfile(member.userInfo.userId)}
+              >
+                <img
+                  className="chat_user_img"
+                  src={
+                    member.userInfo.profileImg
+                      ? `/uploadprofile/${member.userInfo.profileImg}`
+                      : defaultimg
+                  }
+                />
+                <div className="chat_user_nickname">
+                  {member.userInfo.userNickname}
+                </div>
               </div>
             ))}
           </div>
@@ -374,6 +452,12 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
           </button>
         </div>
       </div>
+      {isProfileModalOpen && (
+        <ProfileModal
+          userId={selectedUser}
+          handleCloseProfile={handleCloseProfile}
+        />
+      )}
     </StyledChatRoom>
   );
 };

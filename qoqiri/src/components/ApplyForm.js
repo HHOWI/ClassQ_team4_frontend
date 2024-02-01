@@ -343,7 +343,7 @@ const ApplyForm = ({ userInfo, postSEQ }) => {
                   {userCategoryList.map((categoryList) => (
                     <div
                       className="ap_back_category_list_user"
-                      key={categoryList.matchingCategorySEQ}
+                      key={categoryList.userCategorySeq}
                     >
                       {categoryList.category?.categoryName}
                     </div>

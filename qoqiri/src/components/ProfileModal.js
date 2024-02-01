@@ -216,7 +216,7 @@ const StyledProfile = styled.div`
 
 const ProfileModal = ({ userId, handleCloseProfile }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [userCategoryList, setUserCategoryList] = useState([]);
   const [userData, setUserData] = useState("");
   const user = useSelector((state) => state.user);
@@ -294,10 +294,10 @@ const ProfileModal = ({ userId, handleCloseProfile }) => {
     setIsFlipped(!isFlipped);
   };
   const handleOpenProfileImage = () => {
-    setIsModalOpen(true);
+    setIsImageModalOpen(true);
   };
   const handleCloseProfileImage = () => {
-    setIsModalOpen(false);
+    setIsImageModalOpen(false);
   };
 
   const close = (e) => {
@@ -367,7 +367,7 @@ const ProfileModal = ({ userId, handleCloseProfile }) => {
                   {userCategoryList.map((categoryList) => (
                     <div
                       className="ap_back_category_list_user"
-                      key={categoryList.matchingCategorySEQ}
+                      key={categoryList.userCategorySeq}
                     >
                       {categoryList.category?.categoryName}
                     </div>
@@ -385,17 +385,17 @@ const ProfileModal = ({ userId, handleCloseProfile }) => {
             </div>
           </div>
         </div>
-        {isModalOpen && (
-          <ProfileImgModal
-            images={[
-              userData?.profileImg
-                ? `/uploadprofile/${userData?.profileImg}`
-                : defaultimg,
-            ]}
-            handleCloseProfileImage={handleCloseProfileImage}
-          />
-        )}
       </div>
+      {isImageModalOpen && (
+        <ProfileImgModal
+          images={[
+            userData?.profileImg
+              ? `/uploadprofile/${userData?.profileImg}`
+              : defaultimg,
+          ]}
+          handleCloseProfileImage={handleCloseProfileImage}
+        />
+      )}
     </StyledProfile>
   );
 };
