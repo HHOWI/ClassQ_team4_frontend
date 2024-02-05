@@ -5,17 +5,17 @@ import {
   getChatMessage,
   getChatRoomInfo,
   getChatRoomUserList,
-  getUserChatRoomInfo,
   joinMessage,
   leaveChatroom,
 } from "../api/chat";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUp } from "@fortawesome/free-solid-svg-icons";
 import { formatSendTime } from "../utils/TimeFormat";
 import defaultimg from "../assets/defaultimg.png";
 import ProfileModal from "./ProfileModal";
+import { asyncChatRooms } from "../store/chatRoomSlice";
 
 const StyledChatRoom = styled.div`
   position: fixed;
@@ -88,9 +88,25 @@ const StyledChatRoom = styled.div`
     padding-right: 10px;
   }
 
+  .chat_list_content {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid rgb(210, 210, 210);
+  }
+
   .chat_list_item {
+    width: 100%;
     padding-bottom: 5px;
-    border-top: 1px solid rgb(210, 210, 210);
+  }
+
+  .chat_list_profileimg {
+    width: 45px;
+    height: 45px;
+    margin-bottom: auto;
+    margin-right: 10px;
+    margin-top: 8px;
+    border-radius: 15px;
   }
 
   .chat_list_header {
@@ -98,7 +114,7 @@ const StyledChatRoom = styled.div`
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     margin-top: 5px;
   }
 
@@ -144,7 +160,7 @@ const StyledChatRoom = styled.div`
 
       .chat_user_img {
         width: 50px;
-        border-radius: 50%;
+        border-radius: 15px;
       }
     }
   }
@@ -194,16 +210,15 @@ const StyledChatRoom = styled.div`
 
 const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   const [chatRoomInfo, setChatRoomInfo] = useState({});
-  const [myChatRoomInfo, setMyChatRoomInfo] = useState({});
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loadMessage, setLoadMessage] = useState([]);
   const [chatRoomUserList, setChatRoomUserList] = useState([]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState("");
-
-  const stompClient = useRef(null);
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
+  const stompClient = useRef(null);
 
   const chatDTO = {
     id: user.id,
@@ -220,12 +235,6 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   const chatMessageAPI = async () => {
     const result = await getChatMessage(chatRoomSEQ);
     setLoadMessage(result.data);
-  };
-
-  // 현재 채팅방에 참여한 유저정보중 내 정보 받아오기(최초접속 확인용)
-  const userChatRoomInfoAPI = async () => {
-    const result = await getUserChatRoomInfo(user.id, chatRoomSEQ);
-    setMyChatRoomInfo(result.data);
   };
 
   // 채팅방 참여자 명단 가져오기
@@ -252,6 +261,33 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
     setIsProfileModalOpen(false);
   };
 
+  // 웹소켓 연결
+  const connectWebsocket = () => {
+    const socket = new SockJS("http://localhost:8080/ws/chat");
+    stompClient.current = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {},
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    // 특정 주소 구독처리(채팅방 구현)
+    stompClient.current.onConnect = () => {
+      stompClient.current.subscribe(
+        `/sub/chat/room/${chatRoomSEQ}`,
+        (message) => {
+          const recv = JSON.parse(message.body);
+          recvMessage(recv);
+        }
+      );
+
+      joinMessage(chatDTO);
+    };
+
+    stompClient.current.activate();
+  };
+
   //메세지정보 서버로 전송
   const sendMessage = async () => {
     // 입력한 메시지의 양 끝 공백 제거
@@ -268,13 +304,14 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
         nickname: user.nickname,
         chatRoomSEQ: chatRoomSEQ,
         message: message,
+        profileImg: user.profileImg,
       }),
     });
 
     setMessage("");
   };
 
-  // 서버에서 메세지정보 받기
+  // 서버에서 웹소켓 메세지정보 받기
   const recvMessage = (recv) => {
     const currentTime = new Date();
     setMessages((prevMessages) => [
@@ -284,30 +321,27 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
         chatRoomSEQ: recv.chatRoomSEQ,
         message: recv.message,
         sendTime: currentTime.toISOString(),
+        profileImg: recv.profileImg,
       },
     ]);
+
+    // 채팅방에서 나가면 유저목록 업데이트
+    if (recv.leave === "Y") {
+      getChatRoomUserListAPI();
+    }
   };
 
   //채팅방 나가기
   const exit = async () => {
-    const currentTime = new Date();
-    stompClient.current.publish({
-      destination: "/pub/chat/message",
-      body: JSON.stringify({
-        nickname: user.nickname,
-        chatRoomSEQ: chatRoomSEQ,
-        message: user.nickname + "님이 채팅방에서 퇴장하였습니다.",
-        sendTime: currentTime.toISOString(),
-      }),
-    });
-
-    leaveChatroom(chatDTO);
-    window.location.reload();
+    await leaveChatroom(chatDTO);
+    dispatch(asyncChatRooms(user.id));
+    stompClient.current?.deactivate();
   };
 
   //채팅방 닫기
   const close = () => {
     handleCloseChatRoom();
+    stompClient.current?.deactivate();
   };
 
   useEffect(() => {
@@ -317,53 +351,9 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   useEffect(() => {
     chatRoomInfoAPI();
     chatMessageAPI();
-    userChatRoomInfoAPI();
+    connectWebsocket();
     getChatRoomUserListAPI();
-
-    const socket = new SockJS("http://localhost:8080/ws/chat");
-    stompClient.current = new Client({
-      webSocketFactory: () => socket,
-      connectHeaders: {},
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-    });
-
-    stompClient.current.activate();
-
-    return () => {
-      if (stompClient.current && stompClient.current.active) {
-        stompClient.current.deactivate();
-      }
-    };
   }, [user, chatRoomSEQ]);
-
-  useEffect(() => {
-    // 특정 주소 구독처리(채팅방 구현)
-    const currentTime = new Date();
-    stompClient.current.onConnect = () => {
-      stompClient.current.subscribe(
-        `/sub/chat/room/${chatRoomSEQ}`,
-        (message) => {
-          const recv = JSON.parse(message.body);
-          recvMessage(recv);
-        }
-      );
-
-      if (myChatRoomInfo.joinMessageSent == "N") {
-        stompClient.current.publish({
-          destination: "/pub/chat/message",
-          body: JSON.stringify({
-            nickname: user.nickname,
-            chatRoomSEQ: chatRoomSEQ,
-            message: user.nickname + "님이 채팅에 참여하였습니다.",
-            sendTime: currentTime.toISOString(),
-          }),
-        });
-        joinMessage(chatDTO);
-      }
-    };
-  }, [myChatRoomInfo]);
 
   return (
     <StyledChatRoom>
@@ -385,25 +375,47 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
         <div className="room_body">
           <div className="chat_list" id="app">
             {loadMessage.map((msg) => (
-              <div className="chat_list_item" key={msg?.chatMessageSEQ}>
-                <div className="chat_list_header">
-                  <div className="nickname">{msg?.userInfo?.userNickname}</div>
-                  <div className="sendTime">
-                    {formatSendTime(msg?.sendTime)}
+              <div className="chat_list_content" key={msg?.chatMessageSEQ}>
+                <img
+                  className="chat_list_profileimg"
+                  src={
+                    msg.userInfo.profileImg
+                      ? `/uploadprofile/${msg?.userInfo.profileImg}`
+                      : defaultimg
+                  }
+                />
+                <div className="chat_list_item">
+                  <div className="chat_list_header">
+                    <div className="nickname">
+                      {msg?.userInfo?.userNickname}
+                    </div>
+                    <div className="sendTime">
+                      {formatSendTime(msg?.sendTime)}
+                    </div>
                   </div>
+                  <div className="message">{msg?.message}</div>
                 </div>
-                <div className="message">{msg?.message}</div>
               </div>
             ))}
             {messages.map((msg, index) => (
-              <div className="chat_list_item" key={index}>
-                <div className="chat_list_header">
-                  <div className="nickname">{msg?.nickname}</div>
-                  <div className="sendTime">
-                    {formatSendTime(msg?.sendTime)}
+              <div className="chat_list_content" key={index}>
+                <img
+                  className="chat_list_profileimg"
+                  src={
+                    msg.profileImg
+                      ? `/uploadprofile/${msg?.profileImg}`
+                      : defaultimg
+                  }
+                />
+                <div className="chat_list_item">
+                  <div className="chat_list_header">
+                    <div className="nickname">{msg?.nickname}</div>
+                    <div className="sendTime">
+                      {formatSendTime(msg?.sendTime)}
+                    </div>
                   </div>
+                  <div className="message">{msg.message}</div>
                 </div>
-                <div className="message">{msg.message}</div>
               </div>
             ))}
           </div>

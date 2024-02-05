@@ -1,7 +1,7 @@
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { getNotifyList } from "../api/notify";
+import { deleteNotify, getNotifyList } from "../api/notify";
 import DetailView from "./DetailView";
 import { formatDate24Hours } from "../utils/TimeFormat";
 import { useNavigate } from "react-router-dom";
@@ -36,17 +36,30 @@ const NotifyList = ({ show, handleClose, ...props }) => {
     setNotifyList(result.data);
   };
 
+  // 내 알림 모두 제거
+  const deleteNotifyAPI = async () => {
+    await deleteNotify(user.id);
+  };
+
+  // 알림 전체 삭제 버튼 함수
+  const deleteNotifyBtn = async () => {
+    await deleteNotifyAPI();
+    notifyListAPI();
+    alert("모든 알림이 삭제되었습니다.");
+  };
+
   useEffect(() => {
-    if (show) {
-      notifyListAPI();
-    }
+    notifyListAPI();
   }, [show]);
 
   return (
     <Offcanvas show={show} onHide={handleClose} {...props}>
       <Offcanvas.Header closeButton>
-        <Offcanvas.Title style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
-          내 알림
+        <Offcanvas.Title style={{ display: "flex" }}>
+          <div className="my_notify">내 알림</div>
+          <button className="delete_notify" onClick={deleteNotifyBtn}>
+            알림 전체 삭제
+          </button>
         </Offcanvas.Title>
       </Offcanvas.Header>
       <Offcanvas.Body>

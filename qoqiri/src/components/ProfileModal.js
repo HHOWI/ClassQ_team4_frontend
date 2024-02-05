@@ -62,7 +62,7 @@ const StyledProfile = styled.div`
     margin-bottom: 10px;
     width: 250px;
     height: 250px;
-    border-radius: 100%;
+    border-radius: 80px;
     object-fit: cover;
     box-sizing: border-box;
     cursor: pointer;

@@ -25,7 +25,6 @@ const Header = () => {
   const [keyword, setKeyword] = useState("");
   const user = useSelector((state) => state.user);
   const [notify, setNotify] = useState(0);
-  const [modalOpen, setModalOpen] = useState(false);
   const [notifyListShow, setNotifyListShow] = useState(false);
   const [chatRoomListShow, setChatRoomListShow] = useState(false);
   const notifyClose = () => setNotifyListShow(false);

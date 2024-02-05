@@ -1,3 +1,25 @@
+.my_notify {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: rgb(49, 49, 49);
+}
+
+.delete_notify {
+  font-size: 1rem;
+  margin-left: 20px;
+  border: none;
+  border-radius: 15px;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  color: rgb(49, 49, 49);
+  transition: opacity 0.2s ease;
+}
+
+.delete_notify:hover {
+  opacity: 0.7;
+}
+
 .notify_list {
   display: flex;
   flex-direction: column; /* 세로로 정렬 */
@@ -10,6 +32,7 @@
   margin-bottom: 10px;
   transition: opacity 0.2s ease;
   cursor: pointer;
+  color: rgb(49, 49, 49);
 }
 
 .notify_message {

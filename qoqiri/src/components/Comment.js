@@ -2,7 +2,7 @@ import styled from "styled-components";
 import AddComment from "./AddComment";
 import { useState, useRef, useEffect } from "react";
 import Reply from "./Reply";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { deleteComment, updateComment } from "../store/commentSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faThumbsUp } from "@fortawesome/free-regular-svg-icons";
@@ -117,8 +117,7 @@ const Comment = ({ comment }) => {
   const dispatch = useDispatch();
   const [liked, setLiked] = useState(false);
   const [seq, setSeq] = useState(0);
-  const [likeStatus, setLikeStatus] = useState(false);
-  const [userInfo, setUserinfo] = useState([]);
+  const user = useSelector((state) => state.user);
 
   const onClick = () => {
     setIsActive(!isActive);
@@ -253,17 +252,19 @@ const Comment = ({ comment }) => {
             >
               {content}
             </div>
-            <div className="comment_button_list">
-              <button className="comment_button" onClick={onClick}>
-                답글
-              </button>
-              <button className="comment_button" onClick={onUpdate}>
-                수정
-              </button>
-              <button className="comment_button" onClick={onDelete}>
-                삭제
-              </button>
-            </div>
+            {user.id === comment.userInfo.userId && (
+              <div className="comment_button_list">
+                <button className="comment_button" onClick={onClick}>
+                  답글
+                </button>
+                <button className="comment_button" onClick={onUpdate}>
+                  수정
+                </button>
+                <button className="comment_button" onClick={onDelete}>
+                  삭제
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
