@@ -1,5 +1,5 @@
-import React, { useState, useEffect,useRef } from 'react';
-import '../css/PostEdit.css';
+import React, { useState, useEffect, useRef } from "react";
+import "../css/PostEdit.css";
 import {
     getPlace,
     getPlaceType,
@@ -9,24 +9,24 @@ import {
     editPostAPI,
     getSelectPlace,
     getSelectPlaceType,
-    getSelectAttach,  
+    getSelectAttach,
     deleteMatchingAPI,
     addMatchingAPI,
     deleteAttachmentsAPI,
-    addAttachmentsAPI
-} from '../api/post';
-import { getCategories } from '../api/category';
-import { getCategoryTypes } from '../api/categoryType';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+    addAttachmentsAPI,
+} from "../api/post";
+import { getCategories } from "../api/category";
+import { getCategoryTypes } from "../api/categoryType";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 const PostEdit = () => {
     const { id } = useParams();
 
     const dispatch = useDispatch();
 
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
+    const [title, setTitle] = useState("");
+    const [content, setContent] = useState("");
 
     const [attachmentImg, setAttachmentImg] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
@@ -43,12 +43,11 @@ const PostEdit = () => {
     const [selectedPlace, setSelectedPlace] = useState();
     const [selectedPlaceType, setSelectedPlaceType] = useState(null);
 
-    const [selectedPlaceName, setSelectedPlaceName] = useState('');
-    const [selectedPlaceTypeName, setSelectedPlaceTypeName] = useState('');
+    const [selectedPlaceName, setSelectedPlaceName] = useState("");
+    const [selectedPlaceTypeName, setSelectedPlaceTypeName] = useState("");
 
     const [categories, setCategories] = useState([]);
     const [categoryTypes, setCategoryTypes] = useState([]);
-
 
     const [editLike, setEditLike] = useState([]);
     const [editSeq, setEditSeq] = useState([]);
@@ -64,9 +63,9 @@ const PostEdit = () => {
 
         setTitle(postData.postTitle);
         setContent(postData.postContent);
-       
-        // 선택한 상세 지역 정보 불러오기    
-        const selectedPlaceData = await getSelectPlace(postData.place.placeSEQ); 
+
+        // 선택한 상세 지역 정보 불러오기
+        const selectedPlaceData = await getSelectPlace(postData.place.placeSEQ);
         setSelectedPlaceName(selectedPlaceData.data.placeName);
 
         // 선택한 지역 타입 정보 불러오기
@@ -105,20 +104,20 @@ const PostEdit = () => {
     };
 
     // 첨부한 첨부파일 불러오기
-    const getSelectAttachAPI = async () =>{
+    const getSelectAttachAPI = async () => {
         const selectedAttachData = await getSelectAttach(id);
         setSelectAttach(selectedAttachData.data);
         console.log(selectedAttachData);
     };
 
-       // 불러온 첨부파일 미리보기
-       const selectAttachAPI = async () => {
+    // 불러온 첨부파일 미리보기
+    const selectAttachAPI = async () => {
         try {
             const result = await getAttachments(id);
             console.log(result.data); // 전체 서버 응답 확인
             setImagePreviews(result.data);
         } catch (error) {
-            console.error('Error fetching attachments:', error);
+            console.error("Error fetching attachments:", error);
         }
     };
 
@@ -153,18 +152,19 @@ const PostEdit = () => {
         const maxFileSize = 10 * 1024 * 1024; // 사진 용량 제한 10mb
         const newAttachmentImg = [];
 
-        for (let i = 0; i < files.length; i++) { // 사진 3장까지만 제한
+        for (let i = 0; i < files.length; i++) {
+            // 사진 3장까지만 제한
             const file = files[i];
 
             if (file.size <= maxFileSize) {
                 if (newAttachmentImg.length < maxFileCount) {
                     newAttachmentImg.push(file);
                 } else {
-                    alert('사진은 3장까지만 업로드 할 수 있습니다.');
+                    alert("사진은 3장까지만 업로드 할 수 있습니다.");
                     break;
                 }
             } else {
-                alert('사진 용량이 10MB를 초과합니다.');
+                alert("사진 용량이 10MB를 초과합니다.");
             }
         }
 
@@ -172,13 +172,12 @@ const PostEdit = () => {
         if (newAttachmentImg.length > 0) {
             updateImagePreviews(newAttachmentImg);
         }
-    
     };
 
     // 첨부파일 미리보기
     const updateImagePreviews = (newAttachmentImg) => {
         const previews = [];
-    
+
         for (let i = 0; i < newAttachmentImg.length && i < maxFileCount; i++) {
             const imageUrl = URL.createObjectURL(newAttachmentImg[i]);
             previews.push(imageUrl);
@@ -202,12 +201,11 @@ const PostEdit = () => {
         if (attachmentImg) {
             setDeletedImages((prevDeletedImages) => [...prevDeletedImages, attachmentImg]);
         }
-  };
- 
+    };
+
     // 카테고리 선택, 제거 핸들러
 
     const handleInterestClick = (categorySEQ, TypeSEQ) => {
-        
         setEditLike([...editLike, categorySEQ]);
         if (editLike.includes(categorySEQ)) {
             // 이미 선택된 카테고리인 경우 선택 해제
@@ -218,10 +216,9 @@ const PostEdit = () => {
             setEditLike([...editLike, categorySEQ]);
             setEditSeq([...editSeq, TypeSEQ]);
         }
-     
     };
 
-       // 글 수정 시 상단에 선택할 수 있는 카테고리, 카테고리 타입
+    // 글 수정 시 상단에 선택할 수 있는 카테고리, 카테고리 타입
     useEffect(() => {
         const fetchCategoryTypes = async () => {
             const result = await getCategoryTypes();
@@ -253,15 +250,15 @@ const PostEdit = () => {
         const result = await getPlaceType();
         setPlaceType(result.data);
     };
-  
+
     useEffect(() => {
         placeAPI();
         placeTypeAPI();
     }, [id]);
 
     const handleCancel = (e) => {
-        navigate('/');
-        alert('글쓰기를 취소했습니다');
+        navigate("/");
+        alert("글쓰기를 취소했습니다");
     };
 
     const navigate = useNavigate();
@@ -270,55 +267,55 @@ const PostEdit = () => {
         if (e) {
             e.preventDefault(); // 폼 기본 제출 방지
         }
-        const PostDTO = {      
-            token: localStorage.getItem('token'),  
-            postSEQ: id, 
+        const PostDTO = {
+            token: localStorage.getItem("token"),
+            postSEQ: id,
             postTitle: title,
-            postContent: content,     
+            postContent: content,
             placeSEQ: selectedPlace,
-            placeTypeSEQ: selectedPlaceType,   
+            placeTypeSEQ: selectedPlaceType,
             boardSEQ: selectedBoard,
         };
 
-       let postResponse;
+        let postResponse;
 
         try {
-            postResponse = await editPostAPI(PostDTO);  
-            console.log(postResponse);            
-            console.log('config.data:', postResponse.config.data);
+            postResponse = await editPostAPI(PostDTO);
+            console.log(postResponse);
+            console.log("config.data:", postResponse.config.data);
 
-             //  기존의 매칭 카테고리 정보 삭제
+            //  기존의 매칭 카테고리 정보 삭제
             await deleteMatchingAPI(postResponse.data.postSEQ);
 
-            const MatchingDTO = {            
-              categoryList: editLike,
-              categoryTypeList: editSeq,
+            const MatchingDTO = {
+                categoryList: editLike,
+                categoryTypeList: editSeq,
             };
 
-                console.log(MatchingDTO);
+            console.log(MatchingDTO);
 
-                // 기존에 업로드한 첨부 파일 삭제
-                //  await deleteAttachmentsAPI(postResponse.data.postSEQ);
+            // 기존에 업로드한 첨부 파일 삭제
+            //  await deleteAttachmentsAPI(postResponse.data.postSEQ);
 
-                // editMatchingAPI 호출
-                const matchingResponse = await addMatchingAPI({                 
-                    postSEQ: postResponse.data.postSEQ,
-                    categories: MatchingDTO.categoryList.map(categorySEQ => ({ categorySEQ })),
-                }); 
-               
-                console.log(matchingResponse);  
-                console.log(matchingResponse.data);    
-                if (postResponse.data) {
-                    alert('수정 성공');
-                    navigate('/');
-                } else {
-                    alert('수정 중 오류가 발생했습니다.');
-                    console.log('Error response:', postResponse); 
-                }
-            } catch (error) {
-                console.error('Error adding/editing post:', error);
-                alert('수정 중 오류가 발생했습니다.');
+            // editMatchingAPI 호출
+            const matchingResponse = await addMatchingAPI({
+                postSEQ: postResponse.data.postSEQ,
+                categories: MatchingDTO.categoryList.map((categorySEQ) => ({ categorySEQ })),
+            });
+
+            console.log(matchingResponse);
+            console.log(matchingResponse.data);
+            if (postResponse.data) {
+                alert("수정 성공");
+                navigate("/");
+            } else {
+                alert("수정 중 오류가 발생했습니다.");
+                console.log("Error response:", postResponse);
             }
+        } catch (error) {
+            console.error("Error adding/editing post:", error);
+            alert("수정 중 오류가 발생했습니다.");
+        }
     };
 
     return (
@@ -333,18 +330,14 @@ const PostEdit = () => {
                                     {categoryTypes.map((categoryType) => (
                                         <div key={categoryType.ctSEQ}>
                                             <h3>{categoryType.ctName}</h3>
-                                            <div className="edit-box-options">                                      
+                                            <div className="edit-box-options">
                                                 {getCategoriesByType(categoryType.ctSEQ).map((category) => (
                                                     <div
                                                         key={category.categorySEQ}
                                                         className={`edit-categoryLike-box-item ${
-                                                            editLike.includes(category.categorySEQ) ? 'selected' : ''
+                                                            editLike.includes(category.categorySEQ) ? "selected" : ""
                                                         }`}
-                                                        onClick={() =>
-                                                            handleInterestClick(
-                                                                category.categorySEQ,                                                              
-                                                            )
-                                                        }
+                                                        onClick={() => handleInterestClick(category.categorySEQ)}
                                                     >
                                                         {category.categoryName}
                                                     </div>
@@ -366,32 +359,52 @@ const PostEdit = () => {
                                 maxLength="100"
                             />
                         </div>
-                            <div className='select-place'>
-                                <h1>지역 선택</h1>
-                                <select onChange={handlePlaceTypeChange} style={{ background: 'antiquewhite', color: '#ff9615', fontWeight: 'bold', borderRadius: '5px', border: 'none', marginLeft:'10px'}} >
-                                    <option className= 'place-option'>{selectedPlaceTypeName}</option>
-                                    {placeType.map((type) => (
-                                        <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
-                                            {type.placeTypeName}
-                                        </option>
-                                    ))}
-                                </select>
+                        <div className="select-place">
+                            <h1>지역 선택</h1>
+                            <select
+                                onChange={handlePlaceTypeChange}
+                                style={{
+                                    background: "antiquewhite",
+                                    color: "#ff9615",
+                                    fontWeight: "bold",
+                                    borderRadius: "5px",
+                                    border: "none",
+                                    marginLeft: "10px",
+                                }}
+                            >
+                                <option className="place-option">{selectedPlaceTypeName}</option>
+                                {placeType.map((type) => (
+                                    <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
+                                        {type.placeTypeName}
+                                    </option>
+                                ))}
+                            </select>
 
-                                {selectedPlaceType && (
-                                    <div className='select-place'>
-                                        <h2>상세 지역</h2>
-                                        <select onChange={handlePlaceChange} style={{ background: 'antiquewhite', color: '#ff9615', fontWeight: 'bold',  borderRadius: '5px', border: 'none', marginLeft:'10px' }}>
-                                            <option className= 'place-option'>{selectedPlaceName}</option>
-                                            {filteredPlaces.map((place) => (
-                                                <option key={place.placeSEQ} value={place.placeSEQ}>
-                                                    {place.placeName}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-                            </div>
-                         {/* <div id="file-update">
+                            {selectedPlaceType && (
+                                <div className="select-place">
+                                    <h2>상세 지역</h2>
+                                    <select
+                                        onChange={handlePlaceChange}
+                                        style={{
+                                            background: "antiquewhite",
+                                            color: "#ff9615",
+                                            fontWeight: "bold",
+                                            borderRadius: "5px",
+                                            border: "none",
+                                            marginLeft: "10px",
+                                        }}
+                                    >
+                                        <option className="place-option">{selectedPlaceName}</option>
+                                        {filteredPlaces.map((place) => (
+                                            <option key={place.placeSEQ} value={place.placeSEQ}>
+                                                {place.placeName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+                        {/* <div id="file-update">
                             <label htmlFor="image-update">
                                 <input
                                     type="file"
@@ -440,7 +453,7 @@ const PostEdit = () => {
                                     id="editor"
                                     maxLength={maxCharacterCount}
                                     onChange={handleEditorChange}
-                                    value={content}                                  
+                                    value={content}
                                 ></textarea>
                                 <div className="wordCount">
                                     내용:

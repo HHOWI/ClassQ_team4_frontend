@@ -1,14 +1,14 @@
-import React, { useState, useEffect , useRef} from 'react';
-import '../css/PostWrite.css';
-import { navigate } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { addPostAPI, addMatchingAPI, getBoards, getPlace, getPlaceType, addAttachmentsAPI } from '../api/post';
-import { getCategories } from '../api/category';
-import { getCategoryTypes } from '../api/categoryType';
+import React, { useState, useEffect, useRef } from "react";
+import "../css/PostWrite.css";
+import { navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { addPostAPI, addMatchingAPI, getBoards, getPlace, getPlaceType, addAttachmentsAPI } from "../api/post";
+import { getCategories } from "../api/category";
+import { getCategoryTypes } from "../api/categoryType";
 
 const PostWrite = () => {
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
+    const [title, setTitle] = useState("");
+    const [content, setContent] = useState("");
 
     const [attachmentImg, setAttachmentImg] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
@@ -22,7 +22,7 @@ const PostWrite = () => {
     const [selectedPlace, setSelectedPlace] = useState(); // 세부 지역
     const [selectedPlaceType, setSelectedPlaceType] = useState(null); // 큰 지역
 
-    const [boards, setBoards] = useState([]); 
+    const [boards, setBoards] = useState([]);
     const [selectedBoard, setSelectedBoard] = useState(1);
 
     const [categories, setCategories] = useState([]); // 세부 카테고리 배열
@@ -35,7 +35,8 @@ const PostWrite = () => {
 
     const navigate = useNavigate();
 
-    const handlePlaceTypeChange = (event) => { // 지역 선택 핸들러
+    const handlePlaceTypeChange = (event) => {
+        // 지역 선택 핸들러
         const selectedType = event.target.value;
         setSelectedPlaceType(selectedType);
 
@@ -45,7 +46,8 @@ const PostWrite = () => {
         setSelectedPlace(null);
     };
 
-    const handlePlaceChange = (event) => { // 세부 지역 선택 핸들러
+    const handlePlaceChange = (event) => {
+        // 세부 지역 선택 핸들러
         const selectedPlace = event.target.value;
         setSelectedPlace(selectedPlace);
     };
@@ -75,18 +77,19 @@ const PostWrite = () => {
         const maxFileSize = 10 * 1024 * 1024; // 사진 용량 제한 10mb
         const newAttachmentImg = [];
 
-        for (let i = 0; i < files.length; i++) { // 사진 3장까지만 제한
+        for (let i = 0; i < files.length; i++) {
+            // 사진 3장까지만 제한
             const file = files[i];
 
             if (file.size <= maxFileSize) {
                 if (newAttachmentImg.length < maxFileCount) {
                     newAttachmentImg.push(file);
                 } else {
-                    alert('사진은 3장까지만 업로드 할 수 있습니다.');
+                    alert("사진은 3장까지만 업로드 할 수 있습니다.");
                     break;
                 }
             } else {
-                alert('사진 용량이 10MB를 초과합니다.');
+                alert("사진 용량이 10MB를 초과합니다.");
             }
         }
 
@@ -94,15 +97,15 @@ const PostWrite = () => {
         if (newAttachmentImg.length > 0) {
             updateImagePreviews(newAttachmentImg);
         }
-    
+
         // 파일 업로드 필드 초기화
-       fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
     };
 
     // 첨부파일 미리보기
     const updateImagePreviews = (newAttachmentImg) => {
         const previews = [];
-    
+
         for (let i = 0; i < newAttachmentImg.length && i < maxFileCount; i++) {
             previews.push(URL.createObjectURL(newAttachmentImg[i]));
         }
@@ -119,7 +122,7 @@ const PostWrite = () => {
         newAttachmentImg.splice(index, 1);
         setAttachmentImg(newAttachmentImg);
         updateImagePreviews(newAttachmentImg);
-  };
+    };
 
     // 카테고리 선택 핸들러
     const handleInterestClick = (categorySEQ, TypeSEQ) => {
@@ -191,8 +194,8 @@ const PostWrite = () => {
     }, [selectedPlaceType]);
 
     const handleCancel = (e) => {
-        navigate('/');
-        alert('글쓰기를 취소했습니다');
+        navigate("/");
+        alert("글쓰기를 취소했습니다");
     };
 
     // 서버에 전송
@@ -200,15 +203,15 @@ const PostWrite = () => {
         if (e) {
             e.preventDefault(); // 폼 기본 제출 방지
         }
-    
+
         // 필수 입력 필드 확인
-        if (!title || !content || !selectedPlaceType || !selectedPlace || !selectedBoard || selectlike.length === 0) {         
-            alert('제목, 내용, 카테고리 선택은 필수입니다.');
+        if (!title || !content || !selectedPlaceType || !selectedPlace || !selectedBoard || selectlike.length === 0) {
+            alert("제목, 내용, 카테고리 선택은 필수입니다.");
             return;
         }
-    
+
         const PostDTO = {
-            token: localStorage.getItem('token'),
+            token: localStorage.getItem("token"),
             postTitle: title,
             postContent: content,
             placeSEQ: selectedPlace,
@@ -223,42 +226,42 @@ const PostWrite = () => {
             postResponse = await addPostAPI(PostDTO);
             console.log(postResponse);
         } catch (error) {
-            console.error('Error adding post:', error);
-            alert('글쓰기 중 오류가 발생했습니다.');
+            console.error("Error adding post:", error);
+            alert("글쓰기 중 오류가 발생했습니다.");
             return;
         }
-    
+
         const MatchingDTO = {
-        categoryList: selectlike,
-        categoryTypeList: selectSEQ,
+            categoryList: selectlike,
+            categoryTypeList: selectSEQ,
         };
         console.log(MatchingDTO);
         // 필수 입력 필드 확인 후에 첨부 파일이 없을 때에만 실행
         if (attachmentImg.length > 0) {
             const formData = new FormData();
-    
-            formData.append('postId', postResponse.data.postSEQ);
-    
+
+            formData.append("postId", postResponse.data.postSEQ);
+
             attachmentImg.forEach((image) => {
-                formData.append('files', image);
+                formData.append("files", image);
             });
-    
+
             // 첨부파일 API
             const attachmentResponse = await addAttachmentsAPI(formData);
             console.log(attachmentResponse);
         }
-    
+
         const matchingResponse = await addMatchingAPI({
             postSEQ: postResponse.data.postSEQ,
             categories: MatchingDTO.categoryList.map((categorySEQ) => ({ categorySEQ })),
         });
         console.log(matchingResponse);
-    
+
         if (postResponse.data) {
-            alert('글쓰기 성공');
-            navigate('/');
+            alert("글쓰기 성공");
+            navigate("/");
         } else {
-            alert('글쓰기 실패');
+            alert("글쓰기 실패");
         }
     };
 
@@ -280,7 +283,7 @@ const PostWrite = () => {
                                                     <div
                                                         key={category.categorySEQ}
                                                         className={`set-categoryLike-box-item ${
-                                                            selectlike.includes(category.categorySEQ) ? 'selected' : ''
+                                                            selectlike.includes(category.categorySEQ) ? "selected" : ""
                                                             // 선택한 카테고리 배경색 나오게함
                                                         }`}
                                                         onClick={() =>
@@ -311,34 +314,51 @@ const PostWrite = () => {
                                 maxLength="100"
                             />
                             <div>
-                            <div className='select-place'>
-                                <div>지역 선택</div>
-                                <select onChange={handlePlaceTypeChange} style={{ background: 'antiquewhite', color: '#ff9615', fontWeight: 'bold' , borderRadius: '5px', border: 'none', marginLeft:'10px'}}>
-                                    <option value="">지역을 선택해주세요</option>
-                                    {placeType.map((type) => (
-                                        <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
-                                            {type.placeTypeName}
-                                        </option>
-                                    ))}
-                                </select>
-                                {selectedPlaceType && (
-                                    <div className='select-place'>
-                                        <h2>상세 지역</h2>
-                                        <select onChange={handlePlaceChange} style={{ background: 'antiquewhite', color: '#ff9615', fontWeight: 'bold', borderRadius: '5px', border: 'none', marginLeft:'10px'}}>
-                                            <option value="">상세 지역을 선택해주세요</option>
-                                            {filteredPlaces.map((place) => (
-                                                <option key={place.placeSEQ} value={place.placeSEQ}>
-                                                    {place.placeName}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-                            </div>
-                                {selectedPlace && (
-                                    <div>
-                                    </div>
-                                )}
+                                <div className="select-place">
+                                    <div>지역 선택</div>
+                                    <select
+                                        onChange={handlePlaceTypeChange}
+                                        style={{
+                                            background: "antiquewhite",
+                                            color: "#ff9615",
+                                            fontWeight: "bold",
+                                            borderRadius: "5px",
+                                            border: "none",
+                                            marginLeft: "10px",
+                                        }}
+                                    >
+                                        <option value="">지역을 선택해주세요</option>
+                                        {placeType.map((type) => (
+                                            <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
+                                                {type.placeTypeName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {selectedPlaceType && (
+                                        <div className="select-place">
+                                            <h2>상세 지역</h2>
+                                            <select
+                                                onChange={handlePlaceChange}
+                                                style={{
+                                                    background: "antiquewhite",
+                                                    color: "#ff9615",
+                                                    fontWeight: "bold",
+                                                    borderRadius: "5px",
+                                                    border: "none",
+                                                    marginLeft: "10px",
+                                                }}
+                                            >
+                                                <option value="">상세 지역을 선택해주세요</option>
+                                                {filteredPlaces.map((place) => (
+                                                    <option key={place.placeSEQ} value={place.placeSEQ}>
+                                                        {place.placeName}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+                                {selectedPlace && <div></div>}
                             </div>
                         </div>
                         <div id="file-upload">
@@ -359,12 +379,11 @@ const PostWrite = () => {
                                     <div className="board-image">
                                         {attachmentImg.map((attachment, index) => (
                                             <div key={index}>
-                                       <img                                                
-                                            src={URL.createObjectURL(attachment)}
-                                            alt={`사진 ${index + 1}`}
-                                        />
-                                                <button id='remove-image' onClick={() => removeImage(index)}>삭제</button>
-                                            </div>     
+                                                <img src={URL.createObjectURL(attachment)} alt={`사진 ${index + 1}`} />
+                                                <button id="remove-image" onClick={() => removeImage(index)}>
+                                                    삭제
+                                                </button>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
@@ -373,7 +392,7 @@ const PostWrite = () => {
                                         key={index}
                                         src={preview}
                                         alt={`사진 미리보기 ${index + 1}`}
-                                        style={{ width: '150px', height: '150px' }}
+                                        style={{ width: "150px", height: "150px" }}
                                     />
                                 ))}
                             </div>
