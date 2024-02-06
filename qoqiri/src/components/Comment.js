@@ -265,7 +265,7 @@ const Comment = ({ comment }) => {
             )}
             {user.id === comment.userInfo.userId && (
               <div className="comment_button_list">
-                {isEditing ? ( // 수정 중일 때는 저장과 취소 버튼 표시
+                {isEditing ? (
                   <>
                     <button className="comment_button" onClick={onUpdate}>
                       저장
@@ -298,11 +298,9 @@ const Comment = ({ comment }) => {
         parent={comment.commentsSEQ}
         code={comment.post}
       />
-      {comment.replies
-        ?.filter((comment) => comment.commentDelete == "N")
-        .map((reply) => (
-          <Reply reply={reply} key={reply.commentsSEQ} />
-        ))}
+      {comment.replies.map((reply) => (
+        <Reply reply={reply} key={reply.commentsSEQ} />
+      ))}
     </StyledComment>
   );
 };
