@@ -1,3 +1,9 @@
+#form-container{
+    padding-left: 240px;
+}
+#form{
+    padding-left: 40px;
+}
 .postWrite input[type='text'],
 .postWrite input[type='password'] {
     box-sizing: border-box;
