@@ -113,6 +113,14 @@ const PostEdit = () => {
     const getSelectAttachAPI = async () => {
         const selectedAttachData = await getSelectAttach(id);
         setSelectAttach(selectedAttachData.data);
+
+        if (selectedAttachData.length > 0 && temporaryData.length == 0) {
+            let tempArr = [];
+            selectedAttachData.forEach((data) => {
+                tempArr.push(data.attachmentURL);
+            });
+            setTemporaryData([...tempArr]);
+        }
     };
 
     // 불러온 첨부파일 미리보기
@@ -246,15 +254,15 @@ const PostEdit = () => {
     }, [id]);
 
     // 저장소에서 파일을 삭제하는 useEffect
-    useEffect(() => {
-        if (selectAttach.length > 0 && temporaryData.length == 0) {
-            let tempArr = [];
-            selectAttach.forEach((data) => {
-                tempArr.push(data.attachmentURL);
-            });
-            setTemporaryData([...tempArr]);
-        }
-    }, [selectAttach]);
+    // useEffect(() => {
+    //     if (selectAttach.length > 0 && temporaryData.length == 0) {
+    //         let tempArr = [];
+    //         selectAttach.forEach((data) => {
+    //             tempArr.push(data.attachmentURL);
+    //         });
+    //         setTemporaryData([...tempArr]);
+    //     }
+    // }, [selectAttach]);
 
     const handleCancel = (e) => {
         navigate("/");
