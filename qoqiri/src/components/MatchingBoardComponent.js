@@ -59,21 +59,18 @@ const StyledMatchingBoardComponent = styled.div`
   .search-box {
     width: 100%;
     display: flex;
-    position: relative;
     background-color: #ffffff;
     padding: 5px 25px;
-    border-radius: 4px;
     margin-bottom: 12px;
   }
 
   .place-box {
     display: flex;
-    margin-right: auto;
   }
 
   .place-box select {
     height: 40px;
-    width: 140px;
+    width: 200px;
     margin-left: 10px;
     margin-right: 10px;
     border-radius: 4px;
@@ -86,12 +83,8 @@ const StyledMatchingBoardComponent = styled.div`
     font-weight: bold;
   }
 
-  .userCategory {
-    display: flex;
-    align-items: center;
-  }
-
-  .userCategory button {
+  .search_btn {
+    margin-left: 15px;
     padding: 8px 15px;
     border-radius: 4px;
     border-style: none;
@@ -101,6 +94,7 @@ const StyledMatchingBoardComponent = styled.div`
     background: #ff7f38;
     color: #ffffff;
   }
+
   .post_list {
     width: 1200px;
     display: flex;
@@ -138,7 +132,8 @@ const MatchingBoardComponent = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const user = useSelector((state) => state.user);
   const [blockUser, setBlockUser] = useState([]);
-  const [blockUserFetched, setBlockUserFetched] = useState(false); // 계속 가져와서 한번만 가져오도록 조건 걸음
+  const [blockUserFetched, setBlockUserFetched] = useState(false);
+  const [isFiltered, setIsFiltered] = useState(false);
 
   const viewCategory = () => {
     const filteredPosts = posts.filter((post) => {
@@ -157,6 +152,7 @@ const MatchingBoardComponent = () => {
     });
 
     setFilteredPosts(filteredPosts);
+    setIsFiltered(true);
   };
 
   const blockUserAPI = async () => {
@@ -213,7 +209,6 @@ const MatchingBoardComponent = () => {
   const getPostsAPI = async () => {
     const result = await getPosts();
     await setPosts(result.data);
-    console.log(posts);
   };
 
   // 카테고리 불러오는 API
@@ -259,38 +254,31 @@ const MatchingBoardComponent = () => {
 
     // 장소 유형이 변경될 때 선택한 장소를 재설정합니다.
     setSelectedPlace(null);
-
-    // 선택한 장소 유형 및 장소에 따라 게시물 필터링
-    filterPosts(selectedType, null);
   };
 
   const handlePlaceChange = (event) => {
     const selectedPlace = event.target.value;
     setSelectedPlace(selectedPlace);
-
-    // 선택한 장소 유형 및 장소에 따라 게시물 필터링
-    filterPosts(selectedPlaceType, selectedPlace);
   };
 
-  const filterPosts = (placeType, place) => {
-    // 장소 유형과 장소가 모두 선택된 경우, 해당하는 게시물을 필터링합니다.
-    if (placeType && place) {
+  const filterPosts = () => {
+    if (selectedPlaceType) {
       const filtered = posts.filter(
-        (post) =>
-          post.place?.placeType?.placeTypeSEQ == placeType &&
-          post.place?.placeSEQ == place
+        (post) => post.place?.placeType?.placeTypeSEQ == selectedPlaceType
       );
       setFilteredPosts(filtered);
-    } else {
-      // 장소 유형이나 장소 중 하나가 선택되지 않은 경우 모든 게시물을 표시합니다.
-      setFilteredPosts(posts);
+    } else if (selectedPlace) {
+      const filtered = posts.filter(
+        (post) => post.place?.placeSEQ == selectedPlace
+      );
+      setFilteredPosts(filtered);
     }
+    setIsFiltered(true);
   };
 
-  useEffect(() => {
-    // 선택한 장소 및 장소 유형에 따라 게시물을 가져옵니다.
-    filterPosts(selectedPlaceType, selectedPlace);
-  }, [selectedPlaceType, selectedPlace, posts]);
+  const allView = () => {
+    setIsFiltered(false);
+  };
 
   useEffect(() => {
     placeAPI();
@@ -362,30 +350,36 @@ const MatchingBoardComponent = () => {
                 </option>
               ))}
             </select>
-            {selectedPlaceType && (
-              <div className="place-box">
-                <h1>상세 지역</h1>
-                <select onChange={handlePlaceChange}>
-                  <option value="">상세 지역을 선택해주세요</option>
-                  {filteredPlaces.map((place) => (
-                    <option key={place.placeSEQ} value={place.placeSEQ}>
-                      {place.placeName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
-          <div className="userCategory">
-            <button className="userCategory" onClick={viewCategory}>
-              내 관심사만 보기
-            </button>
+          <div className="place-box">
+            <h1>상세 지역</h1>
+            <select onChange={handlePlaceChange}>
+              <option value="">상세 지역을 선택해주세요</option>
+              {filteredPlaces.map((place) => (
+                <option key={place.placeSEQ} value={place.placeSEQ}>
+                  {place.placeName}
+                </option>
+              ))}
+            </select>
           </div>
+          <button className="search_btn" onClick={filterPosts}>
+            선택한 지역만 보기
+          </button>
+          <button className="search_btn" onClick={viewCategory}>
+            내 관심사만 보기
+          </button>
+          <button className="search_btn" onClick={allView}>
+            전체 보기
+          </button>
         </div>
         <div className="post_list">
-          {posts.map((post) => (
-            <Post key={post.postSEQ} postSEQ={post.postSEQ} />
-          ))}
+          {isFiltered
+            ? filteredPosts.map((post) => (
+                <Post key={post.postSEQ} postSEQ={post.postSEQ} />
+              ))
+            : posts.map((post) => (
+                <Post key={post.postSEQ} postSEQ={post.postSEQ} />
+              ))}
         </div>
         <button className="more_post" onClick={loadMorePosts}>
           더보기

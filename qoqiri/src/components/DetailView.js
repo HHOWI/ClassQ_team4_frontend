@@ -212,6 +212,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
   const [categoryList, setCategoryList] = useState([]);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
+  const comments = useSelector((state) => state.comment);
 
   // 게시물 API
   const getPostAPI = async () => {
@@ -243,11 +244,6 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
   const close = () => {
     handleCloseDetailView();
   };
-
-  // 댓글 슬라이스
-  const comments = useSelector((state) => {
-    return state.comment;
-  });
 
   // 게시물 이미지 오픈
   const handleOpenImage = (index) => {
