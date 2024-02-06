@@ -85,6 +85,10 @@ const StyledComment = styled.div`
     justify-content: center;
   }
 
+  .comment_edit {
+    resize: none;
+  }
+
   .comment_content {
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -113,18 +117,23 @@ const Comment = ({ comment }) => {
   const [isActive, setIsActive] = useState(true);
   const [content, setContent] = useState(comment.commentDesc);
   const [like, setLike] = useState(0);
-  const contentRef = useRef(null);
-  const dispatch = useDispatch();
+  const [isEditing, setIsEditing] = useState(false);
   const [liked, setLiked] = useState(false);
   const [seq, setSeq] = useState(0);
   const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   const onClick = () => {
     setIsActive(!isActive);
   };
 
-  const handleBlur = () => {
-    setContent(contentRef.current.innerText);
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const editCancel = () => {
+    setContent(comment.commentDesc);
+    setIsEditing(false);
   };
 
   const likeAPI = async () => {
@@ -243,26 +252,41 @@ const Comment = ({ comment }) => {
 
         <div className="comment_and_button">
           <div className="comment_info">
-            <div
-              className="comment_content"
-              contentEditable="true"
-              suppressContentEditableWarning
-              ref={contentRef}
-              onBlur={handleBlur}
-            >
-              {content}
-            </div>
+            {isEditing ? (
+              <textarea
+                className="comment_edit"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={4}
+                cols={50}
+              />
+            ) : (
+              <div className="comment_content">{content}</div>
+            )}
             {user.id === comment.userInfo.userId && (
               <div className="comment_button_list">
-                <button className="comment_button" onClick={onClick}>
-                  답글
-                </button>
-                <button className="comment_button" onClick={onUpdate}>
-                  수정
-                </button>
-                <button className="comment_button" onClick={onDelete}>
-                  삭제
-                </button>
+                {isEditing ? ( // 수정 중일 때는 저장과 취소 버튼 표시
+                  <>
+                    <button className="comment_button" onClick={onUpdate}>
+                      저장
+                    </button>
+                    <button className="comment_button" onClick={editCancel}>
+                      취소
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="comment_button" onClick={onClick}>
+                      답글
+                    </button>
+                    <button className="comment_button" onClick={handleEdit}>
+                      수정
+                    </button>
+                    <button className="comment_button" onClick={onDelete}>
+                      삭제
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>

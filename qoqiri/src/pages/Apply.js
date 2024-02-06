@@ -8,6 +8,7 @@ import { asyncChatRooms } from "../store/chatRoomSlice";
 import styled from "styled-components";
 import { matchedPost } from "../api/post";
 import ChatRoom from "../components/ChatRoom";
+import { asyncMyPostNotMatched } from "../store/myPostSlice";
 
 const StyledApply = styled.div`
   padding-left: 240px;
@@ -112,10 +113,11 @@ const Apply = () => {
     await dispatch(asyncChatRooms(user.id));
   };
 
-  const matchingEnd = () => {
+  const matchingEnd = async () => {
     alert("즐겁게 노시길 바래요!");
-    matchedPost(postSEQ);
-    navigate("/matchingBoard");
+    await matchedPost(postSEQ);
+    await dispatch(asyncMyPostNotMatched(user.id));
+    await navigate("/matchingBoard");
   };
 
   // ChatRoom 모달을 닫기 위한 함수

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useState, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { deleteComment, updateComment } from "../store/commentSlice";
 import { formatDate24Hours } from "../utils/TimeFormat";
 
@@ -85,8 +85,19 @@ const Box = styled.div`
 
 const Reply = ({ reply }) => {
   const [content, setContent] = useState(reply.commentDesc);
-  const contentRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const editCancel = () => {
+    setContent(reply.commentDesc);
+    setIsEditing(false);
+  };
+
   const onDelete = () => {
     dispatch(
       deleteComment({
@@ -102,9 +113,7 @@ const Reply = ({ reply }) => {
     alert("댓글 삭제 완료!");
     window.location.reload();
   };
-  const handleBlur = () => {
-    setContent(contentRef.current.innerText);
-  };
+
   const onUpdate = () => {
     dispatch(
       updateComment({
@@ -134,23 +143,40 @@ const Reply = ({ reply }) => {
 
         <div className="comment_and_button">
           <div className="comment_info">
-            <div
-              className="comment_content"
-              contentEditable="true"
-              suppressContentEditableWarning
-              ref={contentRef}
-              onBlur={handleBlur}
-            >
-              {content}
-            </div>
-            <div className="comment_button_list">
-              <button className="comment_button" onClick={onUpdate}>
-                수정
-              </button>
-              <button className="comment_button" onClick={onDelete}>
-                삭제
-              </button>
-            </div>
+            {isEditing ? (
+              <textarea
+                className="comment_edit"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={4}
+                cols={50}
+              />
+            ) : (
+              <div className="comment_content">{content}</div>
+            )}
+            {user.id === reply.userInfo.userId && (
+              <div className="comment_button_list">
+                {isEditing ? ( // 수정 중일 때는 저장과 취소 버튼 표시
+                  <>
+                    <button className="comment_button" onClick={onUpdate}>
+                      저장
+                    </button>
+                    <button className="comment_button" onClick={editCancel}>
+                      취소
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="comment_button" onClick={handleEdit}>
+                      수정
+                    </button>
+                    <button className="comment_button" onClick={onDelete}>
+                      삭제
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

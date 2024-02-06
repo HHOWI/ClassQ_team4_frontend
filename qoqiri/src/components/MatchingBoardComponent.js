@@ -107,18 +107,28 @@ const StyledMatchingBoardComponent = styled.div`
     flex-direction: row;
     flex-wrap: wrap;
   }
+
+  .more_post {
+    width: 200px;
+    height: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 30px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    background-color: #ff7f38;
+  }
 `;
 
 const MatchingBoardComponent = () => {
   const [posts, setPosts] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
   const [userCategory, setUserCategory] = useState([]);
   const [category, setCategory] = useState([]);
   const [categoryType, setCategoryType] = useState([]);
   const [selectedCatSEQ, setSelectedCatSEQ] = useState(null);
   const [matchCate, setMatchCate] = useState([]);
   const [page, setPage] = useState(1); // 페이지 번호 추가
-  const [loading, setLoading] = useState(false); // 로딩 상태 추가
   const { id } = useParams();
   const [place, setPlace] = useState([]);
   const [placeType, setPlaceType] = useState([]);
@@ -202,7 +212,8 @@ const MatchingBoardComponent = () => {
 
   const getPostsAPI = async () => {
     const result = await getPosts();
-    setPosts(result.data);
+    await setPosts(result.data);
+    console.log(posts);
   };
 
   // 카테고리 불러오는 API
@@ -276,10 +287,6 @@ const MatchingBoardComponent = () => {
     }
   };
 
-  const closeModal = () => {
-    setIsOpen(false);
-  };
-
   useEffect(() => {
     // 선택한 장소 및 장소 유형에 따라 게시물을 가져옵니다.
     filterPosts(selectedPlaceType, selectedPlace);
@@ -313,8 +320,6 @@ const MatchingBoardComponent = () => {
   }, [selectedCatSEQ]);
 
   const loadMorePosts = async () => {
-    setLoading(true);
-
     const nextPage = page + 1;
     const result = await getPosts(nextPage);
 
@@ -326,8 +331,6 @@ const MatchingBoardComponent = () => {
       // 마지막 페이지인 경우, 모든 게시물을 가져옴
       setPosts([...posts, ...result.data]);
     }
-
-    setLoading(false);
   };
   return (
     <StyledMatchingBoardComponent>
@@ -384,6 +387,9 @@ const MatchingBoardComponent = () => {
             <Post key={post.postSEQ} postSEQ={post.postSEQ} />
           ))}
         </div>
+        <button className="more_post" onClick={loadMorePosts}>
+          더보기
+        </button>
       </div>
     </StyledMatchingBoardComponent>
   );

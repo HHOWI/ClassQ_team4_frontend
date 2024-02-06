@@ -10,6 +10,7 @@ import styled from "styled-components";
 import { deletePost } from "../api/post";
 import ProfileModal from "../components/ProfileModal";
 import DetailView from "../components/DetailView";
+import { formatDate24Hours } from "../utils/TimeFormat";
 
 const StyledReview = styled.div`
   width: 100%;
@@ -132,37 +133,25 @@ const StyledReview = styled.div`
     font-size: 0.8rem;
     color: gray;
     .rv-writer {
-      margin-right: 40px;
+      margin-right: 10px;
       cursor: pointer;
+    }
+    .rv_date {
+      margin-right: 10px;
     }
     .rv-matching-title {
       cursor: pointer;
     }
   }
 
-  .rv-stats-thums {
-    float: right;
-    position: relative;
-  }
-  .rv-like-button {
-    cursor: pointer;
-  }
-
-  .rv-stats-views {
-    float: right;
-    position: relative;
-    bottom: 20px;
-    margin: 6px;
-  }
-
-  .rv-review-item textarea {
+  .rv_edit {
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     resize: none;
     height: 60px;
-    width: 700px;
+    width: 900px;
   }
 
   .rv-psUpdataOKBtn {
@@ -191,29 +180,6 @@ const StyledReview = styled.div`
 
   .rv-review-item p {
     font-size: 20px;
-  }
-
-  .rv-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 30;
-  }
-
-  .rv-modal-content {
-    position: relative;
-    width: 360px;
-    height: 690px;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
   }
 `;
 
@@ -283,7 +249,7 @@ const ReviewBoard = () => {
       setIsEditing(false);
       setEditingPostId(null);
       setContent("");
-      window.location.replace("http://localhost:3000/review");
+      getAllReviewAPI();
     } catch (error) {
       alert("게시글 수정에 실패하였습니다. 다시 시도해주세요.");
     }
@@ -296,7 +262,7 @@ const ReviewBoard = () => {
       alert("리뷰가 삭제되었습니다.");
       // 드롭박스를 업데이트하기 위해 사용자 글 목록을 다시 가져옴
       getMyMatchingsAPI();
-      window.location.replace("http://localhost:3000/review");
+      getAllReviewAPI();
     } catch (error) {
       alert("리뷰 삭제에 실패하였습니다. 다시 시도해주세요.");
     }
@@ -318,6 +284,7 @@ const ReviewBoard = () => {
     if (content.length <= 50) {
       // PostDTO 형식에 맞게 reviewData 객체를 수정
       const PostDTO = {
+        postSEQ: selectedMatching,
         token: user.token, //로그인한 사용자의 토큰
         postContent: content,
         boardSEQ: 2,
@@ -327,7 +294,9 @@ const ReviewBoard = () => {
         // 리뷰 내용을 백엔드로 전송
         await saveReview(PostDTO);
         alert("리뷰가 저장되었습니다.");
-        window.location.replace("http://localhost:3000/review");
+        getAllReviewAPI();
+        getMyMatchingsAPI();
+        setContent("");
       } catch (error) {
         alert("리뷰 저장에 실패하였습니다. 다시 시도해주세요.");
       }
@@ -370,7 +339,7 @@ const ReviewBoard = () => {
             {myMatchings.map((myMatching) => (
               <option
                 key={myMatching.post?.postSEQ}
-                value={myMatching.post?.postTitle}
+                value={myMatching.post?.postSEQ}
               >
                 {myMatching.post?.postTitle}
               </option>
@@ -394,6 +363,7 @@ const ReviewBoard = () => {
               {isEditing && editingPostId === po.postSEQ ? (
                 <>
                   <textarea
+                    className="rv_edit"
                     value={editingContent}
                     onChange={(e) => handleContentChange(e, true)}
                   />
@@ -416,11 +386,14 @@ const ReviewBoard = () => {
                         >
                           작성자: {po.userInfo.userNickname}
                         </span>
+                        <span className="rv_date">
+                          {formatDate24Hours(po.postDate)}
+                        </span>
                         <span
                           className="rv-matching-title"
-                          onClick={() => handleOpenDetailView(po.postSEQ)}
+                          onClick={() => handleOpenDetailView(po.postTitle)}
                         >
-                          원글 제목 : {po.postTitle}
+                          원글
                         </span>
                       </div>
                       {loggedInUser.id === po.userInfo.userId && (

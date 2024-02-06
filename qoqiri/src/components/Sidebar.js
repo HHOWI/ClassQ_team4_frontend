@@ -24,7 +24,7 @@ const StyledSidebar = styled.div`
   }
 
   .side_menu::-webkit-scrollbar {
-    width: 10px;
+    width: 7px;
   }
 
   .side_menu::-webkit-scrollbar-thumb {
@@ -112,17 +112,8 @@ const StyledSidebar = styled.div`
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [myPosts, setMyPosts] = useState([]);
   const user = useSelector((state) => state.user);
-
-  const getMyPostsNotMatchedAPI = async () => {
-    const result = await getMyPostsNotMatched(user.id);
-    setMyPosts(result.data);
-  };
-
-  useEffect(() => {
-    getMyPostsNotMatchedAPI();
-  }, [user]);
+  const myPost = useSelector((state) => state.myPost);
 
   if (location.pathname === "/Login" || location.pathname === "/signup") {
     return null; // 로그인, 회원가입 페이지일때 헤더 숨김
@@ -149,7 +140,7 @@ const Sidebar = () => {
         {Object.keys(user).length !== 0 && (
           <>
             <div className="mypost">나의 모집글</div>
-            {myPosts.map((post) => (
+            {myPost.map((post) => (
               <div
                 key={post.postSEQ}
                 className="post_item"
