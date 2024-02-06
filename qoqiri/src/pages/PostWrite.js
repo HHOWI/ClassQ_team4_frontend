@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "../css/PostWrite.css";
 import { navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { addPostAPI, addMatchingAPI, getBoards, getPlace, getPlaceType, addAttachmentsAPI } from "../api/post";
+import { addAttachmentsAPI, addMatchingAPI, addPostAPI, getBoards, getPlace, getPlaceType } from "../api/post";
 import { getCategories } from "../api/category";
 import { getCategoryTypes } from "../api/categoryType";
 
@@ -10,8 +10,11 @@ const PostWrite = () => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
 
-    const [attachmentImg, setAttachmentImg] = useState([]);
+    // 이미지 미리보기용
     const [imagePreviews, setImagePreviews] = useState([]);
+    // 서버로 보낼 이미지들의 객체 덩어리
+    const [sendImgs, setSendImgs] = useState(null);
+
     const fileInputRef = useRef(null); // 미리보기
 
     const [place, setPlace] = useState([]);
@@ -37,6 +40,7 @@ const PostWrite = () => {
 
     const handlePlaceTypeChange = (event) => {
         // 지역 선택 핸들러
+        console.log("handlePlaceTypeChange");
         const selectedType = event.target.value;
         setSelectedPlaceType(selectedType);
 
@@ -54,6 +58,7 @@ const PostWrite = () => {
 
     // 제목 입력 핸들러
     const onChangeTitle = (e) => {
+        console.log("onChangeTitle");
         const currentTitle = e.target.value;
         setTitle(currentTitle);
     };
@@ -65,25 +70,31 @@ const PostWrite = () => {
 
     const maxFileCount = 3;
     // 첨부파일 핸들러
-    const handleUploadImage = async (e) => {
-        const files = e.target.files;
+    const handleUploadImage = (e) => {
+        e.preventDefault();
+        e.persist();
 
+        console.log("첨부파일 핸들러");
+
+        // files 는 객체로 들고옴
+        const files = e.target.files;
+        console.log(files);
         if (files.length === 0) {
             // 파일이 선택되지 않았을 때 아무 동작도 하지 않음
             return;
         }
-        console.log(files);
 
         const maxFileSize = 10 * 1024 * 1024; // 사진 용량 제한 10mb
-        const newAttachmentImg = [];
-
+        const filesList = [...files];
+        const imgList = [];
+        console.log(filesList);
         for (let i = 0; i < files.length; i++) {
             // 사진 3장까지만 제한
-            const file = files[i];
-
-            if (file.size <= maxFileSize) {
-                if (newAttachmentImg.length < maxFileCount) {
-                    newAttachmentImg.push(file);
+            const image = URL.createObjectURL(files[i]);
+            console.log(image);
+            if (filesList[i].size <= maxFileSize) {
+                if (filesList.length <= maxFileCount) {
+                    imgList.push(image);
                 } else {
                     alert("사진은 3장까지만 업로드 할 수 있습니다.");
                     break;
@@ -92,36 +103,17 @@ const PostWrite = () => {
                 alert("사진 용량이 10MB를 초과합니다.");
             }
         }
-
-        setAttachmentImg(newAttachmentImg); // 변경된 첨부 파일 배열을 상태로 설정
-        if (newAttachmentImg.length > 0) {
-            updateImagePreviews(newAttachmentImg);
-        }
-
-        // 파일 업로드 필드 초기화
-        fileInputRef.current.value = "";
+        setImagePreviews(imgList);
+        setSendImgs(filesList);
     };
 
-    // 첨부파일 미리보기
-    const updateImagePreviews = (newAttachmentImg) => {
-        const previews = [];
+    const handlerDeleteImage = (e, img) => {
+        console.log("삭제 버튼 눌림 !!");
 
-        for (let i = 0; i < newAttachmentImg.length && i < maxFileCount; i++) {
-            previews.push(URL.createObjectURL(newAttachmentImg[i]));
-        }
-        setImagePreviews(previews); // 새로운 미리보기 이미지 URL 설정
-    };
-    // 첨부파일 미리보기 중복방지
-    useEffect(() => {
-        setImagePreviews([]);
-    }, [attachmentImg]);
-
-    // 첨부파일 제거
-    const removeImage = async (index) => {
-        const newAttachmentImg = [...attachmentImg];
-        newAttachmentImg.splice(index, 1);
-        setAttachmentImg(newAttachmentImg);
-        updateImagePreviews(newAttachmentImg);
+        const newImgUrl = imagePreviews.filter((image) => image != img);
+        setImagePreviews(newImgUrl);
+        URL.revokeObjectURL(img);
+        setSendImgs(sendImgs.filter((file, index) => e.target.name != index));
     };
 
     // 카테고리 선택 핸들러
@@ -194,8 +186,8 @@ const PostWrite = () => {
     }, [selectedPlaceType]);
 
     const handleCancel = (e) => {
-        navigate("/");
         alert("글쓰기를 취소했습니다");
+        navigate("/");
     };
 
     // 서버에 전송
@@ -218,7 +210,7 @@ const PostWrite = () => {
             placeTypeSEQ: selectedPlaceType,
             boardSEQ: selectedBoard,
         };
-
+        console.log(PostDTO);
         let postResponse;
 
         try {
@@ -236,19 +228,19 @@ const PostWrite = () => {
             categoryTypeList: selectSEQ,
         };
         console.log(MatchingDTO);
-        // 필수 입력 필드 확인 후에 첨부 파일이 없을 때에만 실행
-        if (attachmentImg.length > 0) {
+
+        if (sendImgs.length > 0) {
             const formData = new FormData();
 
             formData.append("postId", postResponse.data.postSEQ);
 
-            attachmentImg.forEach((image) => {
+            sendImgs.forEach((image) => {
                 formData.append("files", image);
             });
+            console.log(formData);
 
             // 첨부파일 API
-            const attachmentResponse = await addAttachmentsAPI(formData);
-            console.log(attachmentResponse);
+            await addAttachmentsAPI(formData);
         }
 
         const matchingResponse = await addMatchingAPI({
@@ -269,159 +261,166 @@ const PostWrite = () => {
         <>
             <div id="form-container">
                 <div id="form">
-                    <form method="POST">
-                        <div id="interest-section">
-                            <div className="form-el">
-                                <br />
-                                <div className="set-categoryLike-box">
-                                    {categoryTypes.map((categoryType) => (
-                                        <div key={categoryType.ctSEQ}>
-                                            <h3>{categoryType.ctName}</h3>
-                                            <div className="set-box-options">
-                                                {/* 여기서 한번에 묶은 카테고리 카테고리 타입을 맵으로 보여줌 */}
-                                                {getCategoriesByType(categoryType.ctSEQ).map((category) => (
-                                                    <div
-                                                        key={category.categorySEQ}
-                                                        className={`set-categoryLike-box-item ${
-                                                            selectlike.includes(category.categorySEQ) ? "selected" : ""
-                                                            // 선택한 카테고리 배경색 나오게함
-                                                        }`}
-                                                        onClick={() =>
-                                                            handleInterestClick(
-                                                                category.categorySEQ,
-                                                                category.categoryType.ctSEQ
-                                                            )
-                                                        }
-                                                    >
-                                                        {category.categoryName}
-                                                        {/*페이지에서 직접 보이는 카테고리 이름*/}
-                                                    </div>
-                                                ))}
-                                            </div>
+                    <div id="interest-section">
+                        <div className="form-el">
+                            <br />
+                            <div className="set-categoryLike-box">
+                                {categoryTypes.map((categoryType) => (
+                                    <div key={categoryType.ctSEQ}>
+                                        <h3>{categoryType.ctName}</h3>
+                                        <div className="set-box-options">
+                                            {/* 여기서 한번에 묶은 카테고리 카테고리 타입을 맵으로 보여줌 */}
+                                            {getCategoriesByType(categoryType.ctSEQ).map((category) => (
+                                                <div
+                                                    key={category.categorySEQ}
+                                                    className={`set-categoryLike-box-item ${
+                                                        selectlike.includes(category.categorySEQ) ? "selected" : ""
+                                                        // 선택한 카테고리 배경색 나오게함
+                                                    }`}
+                                                    onClick={() =>
+                                                        handleInterestClick(
+                                                            category.categorySEQ,
+                                                            category.categoryType.ctSEQ
+                                                        )
+                                                    }
+                                                >
+                                                    {category.categoryName}
+                                                    {/*페이지에서 직접 보이는 카테고리 이름*/}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <div id="postTitle">
-                            <input
-                                type="text"
-                                name="title"
-                                id="title"
-                                value={title}
-                                onChange={onChangeTitle}
-                                placeholder="제목"
-                                maxLength="100"
-                            />
-                            <div>
-                                <div className="select-place">
-                                    <div>지역 선택</div>
-                                    <select
-                                        onChange={handlePlaceTypeChange}
-                                        style={{
-                                            background: "antiquewhite",
-                                            color: "#ff9615",
-                                            fontWeight: "bold",
-                                            borderRadius: "5px",
-                                            border: "none",
-                                            marginLeft: "10px",
-                                        }}
-                                    >
-                                        <option value="">지역을 선택해주세요</option>
-                                        {placeType.map((type) => (
-                                            <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
-                                                {type.placeTypeName}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {selectedPlaceType && (
-                                        <div className="select-place">
-                                            <h2>상세 지역</h2>
-                                            <select
-                                                onChange={handlePlaceChange}
-                                                style={{
-                                                    background: "antiquewhite",
-                                                    color: "#ff9615",
-                                                    fontWeight: "bold",
-                                                    borderRadius: "5px",
-                                                    border: "none",
-                                                    marginLeft: "10px",
-                                                }}
-                                            >
-                                                <option value="">상세 지역을 선택해주세요</option>
-                                                {filteredPlaces.map((place) => (
-                                                    <option key={place.placeSEQ} value={place.placeSEQ}>
-                                                        {place.placeName}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
-                                </div>
-                                {selectedPlace && <div></div>}
-                            </div>
-                        </div>
-                        <div id="file-upload">
-                            <label htmlFor="image-upload">
-                                <input
-                                    type="file"
-                                    id="image-upload"
-                                    className="image-upload"
-                                    accept="image/*"
-                                    onChange={handleUploadImage}
-                                    multiple
-                                    ref={fileInputRef}
-                                />
-                                <span>사진첨부</span>
-                            </label>
-                            <div>
-                                <div className="board-image-main">
-                                    <div className="board-image">
-                                        {attachmentImg.map((attachment, index) => (
-                                            <div key={index}>
-                                                <img src={URL.createObjectURL(attachment)} alt={`사진 ${index + 1}`} />
-                                                <button id="remove-image" onClick={() => removeImage(index)}>
-                                                    삭제
-                                                </button>
-                                            </div>
-                                        ))}
                                     </div>
-                                </div>
-                                {imagePreviews.map((preview, index) => (
-                                    <img
-                                        key={index}
-                                        src={preview}
-                                        alt={`사진 미리보기 ${index + 1}`}
-                                        style={{ width: "150px", height: "150px" }}
-                                    />
                                 ))}
                             </div>
                         </div>
-                        <div className="post-content">
-                            <div className="textareaContainer">
-                                <textarea
-                                    name="post-content"
-                                    id="editor"
-                                    maxLength={maxCharacterCount}
-                                    onChange={handleEditorChange}
-                                    value={content}
-                                ></textarea>
-                                <div className="wordCount">
-                                    내용: {content.length} / {maxCharacterCount}
+                    </div>
+
+                    <div id="postTitle">
+                        <input
+                            type="text"
+                            name="title"
+                            id="title"
+                            value={title}
+                            onChange={onChangeTitle}
+                            placeholder="제목"
+                            maxLength="100"
+                        />
+                        <div>
+                            <div className="select-place">
+                                <div>지역 선택</div>
+                                <select
+                                    onChange={handlePlaceTypeChange}
+                                    style={{
+                                        background: "antiquewhite",
+                                        color: "#ff9615",
+                                        fontWeight: "bold",
+                                        borderRadius: "5px",
+                                        border: "none",
+                                        marginLeft: "10px",
+                                    }}
+                                >
+                                    <option value="">지역을 선택해주세요</option>
+                                    {placeType.map((type) => (
+                                        <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
+                                            {type.placeTypeName}
+                                        </option>
+                                    ))}
+                                </select>
+                                {selectedPlaceType && (
+                                    <div className="select-place">
+                                        <h2>상세 지역</h2>
+                                        <select
+                                            onChange={handlePlaceChange}
+                                            style={{
+                                                background: "antiquewhite",
+                                                color: "#ff9615",
+                                                fontWeight: "bold",
+                                                borderRadius: "5px",
+                                                border: "none",
+                                                marginLeft: "10px",
+                                            }}
+                                        >
+                                            <option value="">상세 지역을 선택해주세요</option>
+                                            {filteredPlaces.map((place) => (
+                                                <option key={place.placeSEQ} value={place.placeSEQ}>
+                                                    {place.placeName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+                            {selectedPlace && <div></div>}
+                        </div>
+                    </div>
+                    <div id="file-upload">
+                        <label htmlFor="image-upload">
+                            <input
+                                type="file"
+                                id="image-upload"
+                                className="image-upload"
+                                accept="image/*"
+                                onChange={(e) => handleUploadImage(e)}
+                                multiple
+                                ref={fileInputRef}
+                            />
+                            <span>사진첨부</span>
+                        </label>
+                        <div>
+                            <div className="board-image-main">
+                                <div className="board-image">
+                                    {imagePreviews.length > 0
+                                        ? imagePreviews.map((img, index) => (
+                                              <div key={index}>
+                                                  {console.log(img)}
+
+                                                  <img
+                                                      src={img}
+                                                      alt={`사진 미리보기 ${index + 1}`}
+                                                      style={{ width: "150px", height: "150px" }}
+                                                  />
+
+                                                  <button
+                                                      id="remove-image"
+                                                      name={index}
+                                                      onClick={(e) => handlerDeleteImage(e, img)}
+                                                  >
+                                                      삭제
+                                                  </button>
+                                              </div>
+                                          ))
+                                        : ""}
                                 </div>
                             </div>
                         </div>
-                        <div className="submitButton">
-                            <button type="submit" onClick={handleSubmit}>
-                                등록
-                            </button>
+                    </div>
+
+                    <div className="post-content">
+                        <div className="textareaContainer">
+                            <textarea
+                                name="post-content"
+                                id="editor"
+                                maxLength={maxCharacterCount}
+                                onChange={handleEditorChange}
+                                value={content}
+                            ></textarea>
+                            <div className="wordCount">
+                                내용: {content.length} / {maxCharacterCount}
+                            </div>
                         </div>
-                        <div className="cancelButton">
-                            <button onClick={handleCancel}>취소 </button>
-                        </div>
-                    </form>
+                    </div>
+
+                    <div className="submitButton">
+                        <button type="submit" onClick={() => handleSubmit()}>
+                            등록
+                        </button>
+                    </div>
+                    <div className="cancelButton">
+                        <button onClick={() => handleCancel()}>취소 </button>
+                    </div>
                 </div>
             </div>
+            {console.log(sendImgs)}
         </>
     );
 };

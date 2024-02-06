@@ -14,6 +14,7 @@ import {
     addMatchingAPI,
     deleteAttachmentsAPI,
     addAttachmentsAPI,
+    deleteFileAPI,
 } from "../api/post";
 import { getCategories } from "../api/category";
 import { getCategoryTypes } from "../api/categoryType";
@@ -22,17 +23,21 @@ import { useDispatch, useSelector } from "react-redux";
 
 const PostEdit = () => {
     const { id } = useParams();
-
+    const [postSEQ, SetPostSEQ] = useState(0);
     const dispatch = useDispatch();
-
+    const navigate = useNavigate();
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
 
-    const [attachmentImg, setAttachmentImg] = useState([]);
+    // 이미지 미리보기용
     const [imagePreviews, setImagePreviews] = useState([]);
+    // 서버로 보낼 이미지들의 객체 덩어리
     const [selectAttach, setSelectAttach] = useState([]);
+
+    // 사용자가 수정버튼을 눌러서 새롭게 이미지가 db에 올라가게 되면 기존 파일을 지우기 위해 임시로 들고 있을 변수
+    const [temporaryData, setTemporaryData] = useState([]);
+
     const [selectedBoard, setSelectedBoard] = useState(1);
-    const [deletedImages, setDeletedImages] = useState([]);
     const fileInputRef = useRef(null); // 미리보기
 
     const [place, setPlace] = useState([]);
@@ -60,6 +65,7 @@ const PostEdit = () => {
         console.log(result);
 
         const postData = result.data;
+        SetPostSEQ(postData.postSEQ);
 
         setTitle(postData.postTitle);
         setContent(postData.postContent);
@@ -107,7 +113,6 @@ const PostEdit = () => {
     const getSelectAttachAPI = async () => {
         const selectedAttachData = await getSelectAttach(id);
         setSelectAttach(selectedAttachData.data);
-        console.log(selectedAttachData);
     };
 
     // 불러온 첨부파일 미리보기
@@ -115,6 +120,7 @@ const PostEdit = () => {
         try {
             const result = await getAttachments(id);
             console.log(result.data); // 전체 서버 응답 확인
+
             setImagePreviews(result.data);
         } catch (error) {
             console.error("Error fetching attachments:", error);
@@ -140,25 +146,35 @@ const PostEdit = () => {
     };
     const maxFileCount = 3;
     // 첨부파일 핸들러
-    const handleUploadImage = async (e) => {
+    const handleUploadImage = (e) => {
+        e.preventDefault();
+        e.persist();
+
+        console.log("첨부파일 핸들러");
+
+        // files 는 객체로 들고옴
         const files = e.target.files;
+
+        console.log(files);
 
         if (files.length === 0) {
             // 파일이 선택되지 않았을 때 아무 동작도 하지 않음
             return;
         }
-        console.log(files);
 
         const maxFileSize = 10 * 1024 * 1024; // 사진 용량 제한 10mb
-        const newAttachmentImg = [];
+        const filesList = [...files];
+        const imgList = [];
+
+        console.log(filesList);
 
         for (let i = 0; i < files.length; i++) {
             // 사진 3장까지만 제한
-            const file = files[i];
-
-            if (file.size <= maxFileSize) {
-                if (newAttachmentImg.length < maxFileCount) {
-                    newAttachmentImg.push(file);
+            const image = URL.createObjectURL(files[i]);
+            console.log(image);
+            if (filesList[i].size <= maxFileSize) {
+                if (filesList.length <= maxFileCount) {
+                    imgList.push(image);
                 } else {
                     alert("사진은 3장까지만 업로드 할 수 있습니다.");
                     break;
@@ -167,44 +183,17 @@ const PostEdit = () => {
                 alert("사진 용량이 10MB를 초과합니다.");
             }
         }
-
-        setAttachmentImg(newAttachmentImg); // 변경된 첨부 파일 배열을 상태로 설정
-        if (newAttachmentImg.length > 0) {
-            updateImagePreviews(newAttachmentImg);
-        }
+        setImagePreviews(imgList);
+        setSelectAttach(filesList);
     };
 
-    // 첨부파일 미리보기
-    const updateImagePreviews = (newAttachmentImg) => {
-        const previews = [];
-
-        for (let i = 0; i < newAttachmentImg.length && i < maxFileCount; i++) {
-            const imageUrl = URL.createObjectURL(newAttachmentImg[i]);
-            previews.push(imageUrl);
-            console.log(`Image URL ${i + 1}:`, imageUrl);
-        }
-        setImagePreviews(previews); // 새로운 미리보기 이미지 URL 설정
-    };
-
-    // 첨부파일 미리보기 중복방지
-    useEffect(() => {
-        setImagePreviews([]);
-    }, [attachmentImg]);
-
-    // 첨부파일 제거
-    const removeImage = async (index) => {
-        const newAttachmentImg = [...attachmentImg];
-        newAttachmentImg.splice(index, 1);
-        setAttachmentImg(newAttachmentImg);
-        updateImagePreviews(newAttachmentImg);
-
-        if (attachmentImg) {
-            setDeletedImages((prevDeletedImages) => [...prevDeletedImages, attachmentImg]);
-        }
+    const handlerDeleteImage = (e, img) => {
+        const newImgUrl = imagePreviews.filter((image, index) => e.target.name != index);
+        setImagePreviews(newImgUrl);
+        setSelectAttach(selectAttach?.filter((file, index) => e.target.name != index));
     };
 
     // 카테고리 선택, 제거 핸들러
-
     const handleInterestClick = (categorySEQ, TypeSEQ) => {
         setEditLike([...editLike, categorySEQ]);
         if (editLike.includes(categorySEQ)) {
@@ -256,20 +245,36 @@ const PostEdit = () => {
         placeTypeAPI();
     }, [id]);
 
+    // 저장소에서 파일을 삭제하는 useEffect
+    useEffect(() => {
+        if (selectAttach.length > 0 && temporaryData.length == 0) {
+            let tempArr = [];
+            selectAttach.forEach((data) => {
+                tempArr.push(data.attachmentURL);
+            });
+            setTemporaryData([...tempArr]);
+        }
+    }, [selectAttach]);
+
     const handleCancel = (e) => {
         navigate("/");
         alert("글쓰기를 취소했습니다");
     };
 
-    const navigate = useNavigate();
-
     const handleSubmit = async (e) => {
         if (e) {
             e.preventDefault(); // 폼 기본 제출 방지
         }
+
+        // 필수 입력 필드 확인
+        if (!title || !content || !selectedPlaceType || !selectedPlace || !selectedBoard) {
+            alert("제목, 내용, 카테고리 선택은 필수입니다.");
+            return;
+        }
+
         const PostDTO = {
             token: localStorage.getItem("token"),
-            postSEQ: id,
+            postSEQ: postSEQ,
             postTitle: title,
             postContent: content,
             placeSEQ: selectedPlace,
@@ -285,7 +290,7 @@ const PostEdit = () => {
             console.log("config.data:", postResponse.config.data);
 
             //  기존의 매칭 카테고리 정보 삭제
-            await deleteMatchingAPI(postResponse.data.postSEQ);
+            await deleteMatchingAPI(postSEQ);
 
             const MatchingDTO = {
                 categoryList: editLike,
@@ -294,8 +299,30 @@ const PostEdit = () => {
 
             console.log(MatchingDTO);
 
-            // 기존에 업로드한 첨부 파일 삭제
-            //  await deleteAttachmentsAPI(postResponse.data.postSEQ);
+            if (selectAttach.length > 0) {
+                const formData = new FormData();
+
+                formData.append("postId", postSEQ);
+
+                selectAttach.forEach((image) => {
+                    formData.append("files", image);
+                });
+                // 첨부파일 API
+                const isSucc = await addAttachmentsAPI(formData);
+
+                console.log(isSucc);
+                if (isSucc) {
+                    if (temporaryData.length > 0) {
+                        const deleteFormData = new FormData();
+                        temporaryData.forEach((data) => deleteFormData.append("files", data));
+                        const isDelete = await deleteFileAPI(deleteFormData);
+
+                        if (isDelete) {
+                            console.log("기존 파일 삭제 완료");
+                        }
+                    }
+                }
+            }
 
             // editMatchingAPI 호출
             const matchingResponse = await addMatchingAPI({
@@ -307,7 +334,7 @@ const PostEdit = () => {
             console.log(matchingResponse.data);
             if (postResponse.data) {
                 alert("수정 성공");
-                navigate("/");
+                //navigate("/");
             } else {
                 alert("수정 중 오류가 발생했습니다.");
                 console.log("Error response:", postResponse);
@@ -322,155 +349,168 @@ const PostEdit = () => {
         <>
             <div id="form-container">
                 <div id="form">
-                    <form method="PUT">
-                        <div id="interest-section">
-                            <div className="form-el">
-                                <br />
-                                <div className="edit-categoryLike-box">
-                                    {categoryTypes.map((categoryType) => (
-                                        <div key={categoryType.ctSEQ}>
-                                            <h3>{categoryType.ctName}</h3>
-                                            <div className="edit-box-options">
-                                                {getCategoriesByType(categoryType.ctSEQ).map((category) => (
-                                                    <div
-                                                        key={category.categorySEQ}
-                                                        className={`edit-categoryLike-box-item ${
-                                                            editLike.includes(category.categorySEQ) ? "selected" : ""
-                                                        }`}
-                                                        onClick={() => handleInterestClick(category.categorySEQ)}
-                                                    >
-                                                        {category.categoryName}
-                                                    </div>
-                                                ))}
-                                            </div>
+                    <div id="interest-section">
+                        <div className="form-el">
+                            <br />
+                            <div className="edit-categoryLike-box">
+                                {categoryTypes.map((categoryType) => (
+                                    <div key={categoryType.ctSEQ}>
+                                        <h3>{categoryType.ctName}</h3>
+                                        <div className="edit-box-options">
+                                            {getCategoriesByType(categoryType.ctSEQ).map((category) => (
+                                                <div
+                                                    key={category.categorySEQ}
+                                                    className={`edit-categoryLike-box-item ${
+                                                        editLike.includes(category.categorySEQ) ? "selected" : ""
+                                                    }`}
+                                                    onClick={() => handleInterestClick(category.categorySEQ)}
+                                                >
+                                                    {category.categoryName}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <div id="postTitle">
-                            <input
-                                type="text"
-                                name="title"
-                                id="title"
-                                value={title}
-                                onChange={onChangeTitle}
-                                placeholder="제목"
-                                maxLength="100"
-                            />
-                        </div>
-                        <div className="select-place">
-                            <h1>지역 선택</h1>
-                            <select
-                                onChange={handlePlaceTypeChange}
-                                style={{
-                                    background: "antiquewhite",
-                                    color: "#ff9615",
-                                    fontWeight: "bold",
-                                    borderRadius: "5px",
-                                    border: "none",
-                                    marginLeft: "10px",
-                                }}
-                            >
-                                <option className="place-option">{selectedPlaceTypeName}</option>
-                                {placeType.map((type) => (
-                                    <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
-                                        {type.placeTypeName}
-                                    </option>
-                                ))}
-                            </select>
-
-                            {selectedPlaceType && (
-                                <div className="select-place">
-                                    <h2>상세 지역</h2>
-                                    <select
-                                        onChange={handlePlaceChange}
-                                        style={{
-                                            background: "antiquewhite",
-                                            color: "#ff9615",
-                                            fontWeight: "bold",
-                                            borderRadius: "5px",
-                                            border: "none",
-                                            marginLeft: "10px",
-                                        }}
-                                    >
-                                        <option className="place-option">{selectedPlaceName}</option>
-                                        {filteredPlaces.map((place) => (
-                                            <option key={place.placeSEQ} value={place.placeSEQ}>
-                                                {place.placeName}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                        </div>
-                        {/* <div id="file-update">
-                            <label htmlFor="image-update">
-                                <input
-                                    type="file"
-                                    id="image-update"
-                                    className="image-update"
-                                    accept="image/*"
-                                    onChange={handleUploadImage}
-                                    multiple
-                                />
-                                <span>사진첨부</span>
-                            </label>
-                        </div> */}
-                        {/* <div>
-                               <div className="board-image-main">
-                                    <div className="board-image">
-                                        {attachmentImg.map((attachment, index) => (
-                                            <div key={index}>
-                                       <img                                                
-                                            src={URL.createObjectURL(attachment)}
-                                            alt={`사진 ${index + 1}`}
-                                        />
-                                                <button id='remove-image' onClick={() => removeImage(index)}>삭제</button>
-                                            </div>     
-                                        ))}
                                     </div>
-                               </div>
-                               <div>
-                                    {imagePreviews.map((preview, index) => (
-                                <div  key={index}>
-                                  <img                               
-                                  src={`/upload/${preview.attachmentURL}`}
-                                  alt={`${index + 1}`}
-                                  style={{ width: '150px', height: '150px' }}
-                              />
-                              <button id='remove-image' onClick={() => removeImage(index, attachmentImg.attachmentId)}>
-                            삭제
-                        </button>
-                              </div>
                                 ))}
-                                </div>                                                                                         
-                            </div>  */}
-                        <div className="post-content">
-                            <div className="textareaContainer">
-                                <textarea
-                                    name="post-content"
-                                    id="editor"
-                                    maxLength={maxCharacterCount}
-                                    onChange={handleEditorChange}
-                                    value={content}
-                                ></textarea>
-                                <div className="wordCount">
-                                    내용:
-                                    {content.length} / {maxCharacterCount}
-                                </div>
                             </div>
                         </div>
+                    </div>
+                    <div id="postTitle">
+                        <input
+                            type="text"
+                            name="title"
+                            id="title"
+                            value={title}
+                            onChange={onChangeTitle}
+                            placeholder="제목"
+                            maxLength="100"
+                        />
+                    </div>
+                    <div className="select-place">
+                        <h1>지역 선택</h1>
+                        <select
+                            onChange={handlePlaceTypeChange}
+                            style={{
+                                background: "antiquewhite",
+                                color: "#ff9615",
+                                fontWeight: "bold",
+                                borderRadius: "5px",
+                                border: "none",
+                                marginLeft: "10px",
+                            }}
+                        >
+                            <option className="place-option">{selectedPlaceTypeName}</option>
+                            {placeType.map((type) => (
+                                <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
+                                    {type.placeTypeName}
+                                </option>
+                            ))}
+                        </select>
 
-                        <div className="updateButton">
-                            <button type="submit" onClick={handleSubmit}>
-                                수정
-                            </button>
+                        {selectedPlaceType && (
+                            <div className="select-place">
+                                <h2>상세 지역</h2>
+                                <select
+                                    onChange={handlePlaceChange}
+                                    style={{
+                                        background: "antiquewhite",
+                                        color: "#ff9615",
+                                        fontWeight: "bold",
+                                        borderRadius: "5px",
+                                        border: "none",
+                                        marginLeft: "10px",
+                                    }}
+                                >
+                                    <option className="place-option">{selectedPlaceName}</option>
+                                    {filteredPlaces.map((place) => (
+                                        <option key={place.placeSEQ} value={place.placeSEQ}>
+                                            {place.placeName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+                    <div id="file-update">
+                        <label htmlFor="image-upload">
+                            <input
+                                type="file"
+                                id="image-upload"
+                                className="image-upload"
+                                accept="image/*"
+                                onChange={(e) => handleUploadImage(e)}
+                                multiple
+                                ref={fileInputRef}
+                            />
+                            <span>사진첨부</span>
+                        </label>
+                    </div>
+                    <div>
+                        <div className="board-image-main">
+                            <div className="board-image">
+                                {imagePreviews.length > 0
+                                    ? imagePreviews.map((img, index) => (
+                                          <div key={index}>
+                                              {img?.attachmentURL ? (
+                                                  <>
+                                                      <img
+                                                          src={"/upload/" + img.attachmentURL}
+                                                          alt={`서버기존데이터 ${index + 1}`}
+                                                          style={{ width: "150px", height: "150px" }}
+                                                      />
+                                                      <button
+                                                          id="remove-image"
+                                                          name={index}
+                                                          onClick={(e) => handlerDeleteImage(e, img)}
+                                                      >
+                                                          삭제
+                                                      </button>
+                                                  </>
+                                              ) : (
+                                                  <>
+                                                      <img
+                                                          src={img}
+                                                          alt={`임시URL ${index + 1}`}
+                                                          style={{ width: "150px", height: "150px" }}
+                                                      />
+                                                      <button
+                                                          id="remove-image"
+                                                          name={index}
+                                                          onClick={(e) => handlerDeleteImage(e, img)}
+                                                      >
+                                                          삭제
+                                                      </button>
+                                                  </>
+                                              )}
+                                          </div>
+                                      ))
+                                    : ""}
+                            </div>
                         </div>
-                        <div className="cancelButton">
-                            <button onClick={handleCancel}>취소 </button>
+                    </div>
+                    <div className="post-content">
+                        <div className="textareaContainer">
+                            <textarea
+                                name="post-content"
+                                id="editor"
+                                maxLength={maxCharacterCount}
+                                onChange={handleEditorChange}
+                                value={content}
+                            ></textarea>
+                            <div className="wordCount">
+                                내용:
+                                {content.length} / {maxCharacterCount}
+                            </div>
                         </div>
-                    </form>
+                    </div>
+
+                    <div className="updateButton">
+                        <button type="submit" onClick={handleSubmit}>
+                            수정
+                        </button>
+                    </div>
+                    <div className="cancelButton">
+                        <button onClick={handleCancel}>취소 </button>
+                    </div>
                 </div>
             </div>
         </>
