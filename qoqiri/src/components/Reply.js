@@ -1,7 +1,11 @@
 import styled from "styled-components";
 import { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteComment, updateComment } from "../store/commentSlice";
+import {
+  deleteComment,
+  updateComment,
+  viewComments,
+} from "../store/commentSlice";
 import { formatDate24Hours } from "../utils/TimeFormat";
 
 const Box = styled.div`
@@ -110,8 +114,8 @@ const Reply = ({ reply }) => {
         commentDelete: "Y",
       })
     );
-    alert("댓글 삭제 완료!");
-    window.location.reload();
+
+    dispatch(viewComments(reply.post));
   };
 
   const onUpdate = () => {
@@ -123,8 +127,8 @@ const Reply = ({ reply }) => {
         commentsParentSeq: reply.commentsParentSeq,
       })
     );
-    alert("댓글 수정 완료!");
-    window.location.reload();
+    dispatch(viewComments(reply.post));
+    setIsEditing(false);
   };
   return (
     <Box>
