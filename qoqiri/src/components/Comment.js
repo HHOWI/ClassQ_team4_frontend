@@ -3,7 +3,11 @@ import AddComment from "./AddComment";
 import { useState, useRef, useEffect } from "react";
 import Reply from "./Reply";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteComment, updateComment } from "../store/commentSlice";
+import {
+  deleteComment,
+  updateComment,
+  viewComments,
+} from "../store/commentSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faThumbsUp } from "@fortawesome/free-regular-svg-icons";
 import { faThumbsUp as solidThumbsUp } from "@fortawesome/free-solid-svg-icons";
@@ -199,8 +203,9 @@ const Comment = ({ comment }) => {
         commentDesc: content,
       })
     );
-    alert("수정완료!");
-    window.location.reload();
+
+    dispatch(viewComments(comment.post));
+    setIsEditing(false);
   };
   const onDelete = () => {
     dispatch(
@@ -214,8 +219,8 @@ const Comment = ({ comment }) => {
         commentDelete: "Y",
       })
     );
-    alert("삭제완료!");
-    window.location.reload();
+
+    dispatch(viewComments(comment.post));
   };
 
   return (
@@ -298,7 +303,7 @@ const Comment = ({ comment }) => {
         parent={comment.commentsSEQ}
         code={comment.post}
       />
-      {comment.replies.map((reply) => (
+      {comment?.replies?.map((reply) => (
         <Reply reply={reply} key={reply.commentsSEQ} />
       ))}
     </StyledComment>

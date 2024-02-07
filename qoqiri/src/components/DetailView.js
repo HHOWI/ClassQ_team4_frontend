@@ -389,7 +389,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
         </div>
 
         <AddComment code={post !== null ? post.postSEQ : null} />
-        {comments.map((comment) => (
+        {comments?.map((comment) => (
           <Comment key={comment.commentsSEQ} comment={comment} />
         ))}
       </div>

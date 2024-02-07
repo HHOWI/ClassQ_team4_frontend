@@ -1,4 +1,4 @@
-import { addComment } from "../store/commentSlice";
+import { addComment, viewComments } from "../store/commentSlice";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
@@ -76,8 +76,7 @@ const AddComment = ({ code, active, parent }) => {
     dispatch(addComment(data));
     setComment("");
 
-    alert("댓글이 추가되었습니다!");
-    window.location.reload();
+    dispatch(viewComments(code));
   };
   return (
     <StyledAddComment onSubmit={onSubmit} className={active ? "active" : ""}>
