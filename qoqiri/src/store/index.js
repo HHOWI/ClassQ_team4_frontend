@@ -4,6 +4,7 @@ import commentSlice from "./commentSlice";
 import chatRoomSlice from "./chatRoomSlice";
 import postSlice from "./postSlice";
 import myPostSlice from "./myPostSlice";
+import blockUserSlice from "./blockUserSlice";
 
 // configureStore 함수를 사용하여 리덕스 스토어 생성
 const store = configureStore({
@@ -14,6 +15,7 @@ const store = configureStore({
     chatRoom: chatRoomSlice.reducer,
     post: postSlice.reducer,
     myPost: myPostSlice.reducer,
+    blockUsers: blockUserSlice.reducer,
   },
 });
 

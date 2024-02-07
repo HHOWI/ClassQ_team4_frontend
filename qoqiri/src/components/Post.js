@@ -14,7 +14,7 @@ import {
 
 const StyledPost = styled.div`
   width: 370px;
-  height: 210px;
+  height: 215px;
   background-color: white;
   margin: 10px;
   border: 1px solid #efefef;
@@ -72,18 +72,28 @@ const StyledPost = styled.div`
     color: gray;
   }
 
-  .post_title {
+  .post_title_info {
     width: 100%;
-    height: 20px;
-    padding-left: 10px;
+    height: 25px;
+    display: flex;
     padding-right: 10px;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: rgb(49, 49, 49);
     margin-bottom: 15px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    align-items: center;
+
+    .post_matched {
+      margin-right: 5px;
+      background-color: rgb(49, 49, 49);
+      color: white;
+      padding: 5px;
+      font-size: 0.9rem;
+      border-radius: 5px;
+    }
   }
 
   .post_image_comment {
@@ -201,7 +211,10 @@ const Post = ({ postSEQ }) => {
             {formatDate24Hours(post?.postDate)}
           </div>
         </div>
-        <div className="post_title">{post?.postTitle}</div>
+        <div className="post_title_info">
+          {post.matched == "Y" && <div className="post_matched">매칭완료</div>}
+          <div className="post_title">{post?.postTitle}</div>
+        </div>
         <div className="post_image_comment">
           <div className="post_image_list">
             {attachmentList.map((attachment) => (

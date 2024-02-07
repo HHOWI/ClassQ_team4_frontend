@@ -77,7 +77,7 @@ const AddComment = ({ code, active, parent }) => {
     setComment("");
 
     alert("댓글이 추가되었습니다!");
-    window.location.reload();
+    // window.location.reload();
   };
   return (
     <StyledAddComment onSubmit={onSubmit} className={active ? "active" : ""}>

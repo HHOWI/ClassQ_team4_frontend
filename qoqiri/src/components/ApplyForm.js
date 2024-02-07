@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import defaultimg from "../assets/defaultimg.png";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   matchingAccept,
   hideMachingUser,
@@ -10,6 +10,8 @@ import styled from "styled-components";
 import { getUserCategory } from "../api/category";
 import { formatDate24Hours } from "../utils/TimeFormat";
 import ProfileImgModal from "./ProfileImgModal";
+import { getBlockUser, postBlockUser, putBlockUser } from "../api/blockuser";
+import { asyncBlockUsers } from "../store/blockUserSlice";
 
 const StyledApplyForm = styled.div`
   .ap_container {
@@ -221,18 +223,43 @@ const StyledApplyForm = styled.div`
   }
 `;
 
-const ApplyForm = ({ userInfo, postSEQ }) => {
+const ApplyForm = ({ userInfo, postSEQ, getMatchingUserInfoByPostSEQAPI }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userCategoryList, setUserCategoryList] = useState([]);
   const [applicantUserMatchingInfo, setApplicantUserMatchingInfo] =
     useState("");
   const user = useSelector((state) => state.user);
+  const blockUserList = useSelector((state) => state.blockUsers);
+  const dispatch = useDispatch();
+
+  // 차단한 사용자인지 확인
+  const isBlocked = blockUserList.some(
+    (blockUser) => blockUser.blockInfo.userId === userInfo.userId
+  );
 
   const DTO = {
     id: user.id,
     postSEQ: postSEQ,
     applicantId: userInfo.userId,
+  };
+
+  const handleBlockUser = async () => {
+    if (!isBlocked) {
+      const userInput = window.prompt("차단 사유를 메모할 수 있습니다.");
+      if (userInput !== null) {
+        const userBlockDTO = {
+          userId: user.id,
+          blockId: userInfo.userId,
+          blockReason: userInput,
+        };
+        await postBlockUser(userBlockDTO);
+        await dispatch(asyncBlockUsers(user.id));
+        alert("차단하였습니다");
+      }
+    } else {
+      alert("이미 차단된 사용자입니다.");
+    }
   };
 
   const getUserCategoryAPI = async () => {
@@ -245,13 +272,13 @@ const ApplyForm = ({ userInfo, postSEQ }) => {
     setApplicantUserMatchingInfo(result.data);
   };
 
-  const matchingAcceptAPI = () => {
-    matchingAccept(DTO);
-    window.location.reload();
+  const matchingAcceptAPI = async () => {
+    await matchingAccept(DTO);
+    await getMatchingUserInfoByPostSEQAPI();
   };
-  const hideMatchingUser = () => {
-    hideMachingUser(DTO);
-    window.location.reload();
+  const hideMatchingUser = async () => {
+    await hideMachingUser(DTO);
+    await getMatchingUserInfoByPostSEQAPI();
   };
 
   const handleCardFlip = () => {
@@ -355,10 +382,8 @@ const ApplyForm = ({ userInfo, postSEQ }) => {
               <button className="ap_back_infoBtn" onClick={handleCardFlip}>
                 기본 프로필
               </button>
-              <button className="ap_back_applyBtn" onClick={matchingAcceptAPI}>
-                {applicantUserMatchingInfo?.matchingAccept == "Y"
-                  ? "승낙한 유저"
-                  : "승낙"}
+              <button className="ap_back_applyBtn" onClick={handleBlockUser}>
+                차단
               </button>
             </div>
           </div>

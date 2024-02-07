@@ -1,30 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getBlockUser, delBlockUser } from "../api/blockuser";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteBlock } from "../api/blockuser";
 import "../css/BlockUser.css";
+import { asyncBlockUsers } from "../store/blockUserSlice";
+import { formatSendTime } from "../utils/TimeFormat";
 
 const BlockUserInfo = () => {
-  const [blockUser, setBlockUser] = useState([]);
   const user = useSelector((state) => state.user);
+  const blockUserList = useSelector((state) => state.blockUsers);
+  const dispatch = useDispatch();
 
-  const blockUserAPI = async () => {
-    const result = await getBlockUser(user.id);
-    setBlockUser(result.data);
-  };
+  const handleBlockUser = async (blockId) => {
+    const userBlockDTO = {
+      userId: user.id,
+      blockId: blockId,
+    };
 
-  useEffect(() => {
-    blockUserAPI();
-  }, [user]);
-
-  const filteredBlockUser = blockUser.filter(
-    (blockUser) => blockUser.unblock === "Y"
-  );
-
-  const handleBlockUser = async (userId) => {
-    const deleteBlockUser = await delBlockUser(userId);
-    alert("수정되었습니다.");
-    window.location.reload();
-    return deleteBlockUser.data;
+    await deleteBlock(userBlockDTO);
+    await dispatch(asyncBlockUsers(user.id));
   };
 
   return (
@@ -32,20 +24,17 @@ const BlockUserInfo = () => {
       <table className="blockUser-table">
         <thead>
           <tr>
-            <th>차단 아이디</th>
+            <th>차단 유저</th>
             <th>차단 날짜</th>
             <th>차단 해제</th>
           </tr>
         </thead>
         <tbody>
-          {filteredBlockUser.map((blockUser) => (
+          {blockUserList.map((blockUser) => (
             <tr key={blockUser.blockUserSeq}>
-              <td>{blockUser.blockInfo.userId}</td>
+              <td>{blockUser.blockInfo.userNickname}</td>
+              <td>{formatSendTime(blockUser.blockDate)}</td>
               <td>
-                {blockUser.blockDate ? blockUser.blockDate.split("T")[0] : ""}
-              </td>
-              <td>
-                {/* 수정된 부분: handleBlockUser 함수에 userId 전달 */}
                 <button
                   onClick={() => handleBlockUser(blockUser.blockInfo.userId)}
                 >
