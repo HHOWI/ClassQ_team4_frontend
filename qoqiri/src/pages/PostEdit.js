@@ -114,6 +114,14 @@ const PostEdit = () => {
         const selectedAttachData = await getSelectAttach(id);
 
         setSelectAttach(selectedAttachData.data);
+
+        if (selectedAttachData.length > 0 && temporaryData.length == 0) {
+            let tempArr = [];
+            selectedAttachData.forEach((data) => {
+                tempArr.push(data.attachmentURL);
+            });
+            setTemporaryData([...tempArr]);
+        }
     };
 
     // 불러온 첨부파일 미리보기

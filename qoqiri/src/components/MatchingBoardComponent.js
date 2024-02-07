@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { getCategoryTypes } from "../api/categoryType";
 import { getCategories } from "../api/category";
 import { getPlace, getPlaceType } from "../api/post";
 import { getUserCategory } from "../api/category";
 
-import { getMatchCategoryInfo, getPosts } from "../api/post";
+import {
+  getMatchCategoryInfo,
+  getPosts,
+  getPostsByCategoryType,
+} from "../api/post";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 import styled from "styled-components";
