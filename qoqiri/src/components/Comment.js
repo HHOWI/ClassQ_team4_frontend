@@ -181,16 +181,6 @@ const Comment = ({ comment }) => {
     }
   };
 
-  useEffect(() => {
-    likeAPI();
-
-    // 댓글마다의 'seq' 값을 localStorage에서 가져와 설정
-    const storedSeq = localStorage.getItem(`seq_${comment.commentsSEQ}`);
-    if (storedSeq) {
-      setSeq(storedSeq);
-    }
-  }, []);
-
   const onUpdate = () => {
     dispatch(
       updateComment({
@@ -217,6 +207,16 @@ const Comment = ({ comment }) => {
     alert("삭제완료!");
     window.location.reload();
   };
+
+  useEffect(() => {
+    likeAPI();
+
+    // 댓글마다의 'seq' 값을 localStorage에서 가져와 설정
+    const storedSeq = localStorage.getItem(`seq_${comment.commentsSEQ}`);
+    if (storedSeq) {
+      setSeq(storedSeq);
+    }
+  }, []);
 
   return (
     <StyledComment>
@@ -298,7 +298,7 @@ const Comment = ({ comment }) => {
         parent={comment.commentsSEQ}
         code={comment.post}
       />
-      {comment.replies.map((reply) => (
+      {comment.replies?.map((reply) => (
         <Reply reply={reply} key={reply.commentsSEQ} />
       ))}
     </StyledComment>

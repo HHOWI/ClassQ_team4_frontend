@@ -79,14 +79,17 @@ const StyledSidebar = styled.div`
     margin: 10px;
     line-height: 1.5;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-self: start;
+    justify-content: end;
     p {
+      color: rgb(49, 49, 49);
       font-weight: bold;
+      margin-bottom: 10px;
     }
   }
   .sidebar_user {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     display: flex;
     flex-direction: column;
   }

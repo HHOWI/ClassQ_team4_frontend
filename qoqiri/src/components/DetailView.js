@@ -368,9 +368,14 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
             </div>
           </div>
           <div className="detail_button">
-            <button className="play_btn" onClick={handleApplyClick}>
-              신청
-            </button>
+            {post.matched == "Y" ? (
+              <button className="play_btn">완료된 매칭입니다</button>
+            ) : (
+              <button className="play_btn" onClick={handleApplyClick}>
+                신청
+              </button>
+            )}
+
             {user?.id === post?.userInfo?.userId ? (
               <div className="update_delete">
                 <Link className="update" to={`/postedit/${selectedPostSEQ}`}>
@@ -385,7 +390,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
         </div>
 
         <AddComment code={post !== null ? post.postSEQ : null} />
-        {comments.map((comment) => (
+        {comments?.map((comment) => (
           <Comment key={comment.commentsSEQ} comment={comment} />
         ))}
       </div>

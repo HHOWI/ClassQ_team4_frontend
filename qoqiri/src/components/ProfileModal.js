@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { getUser, userLike } from "../api/user";
 import defaultimg from "../assets/defaultimg.png";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { getUserCategory } from "../api/category";
-import { postBlockUser, getBlockUser, putBlockUser } from "../api/blockuser";
 import ProfileImgModal from "./ProfileImgModal";
+import { postBlockUser } from "../api/blockuser";
+import { asyncBlockUsers } from "../store/blockUserSlice";
 
 const StyledProfile = styled.div`
   position: fixed;
@@ -220,64 +221,45 @@ const ProfileModal = ({ userId, handleCloseProfile }) => {
   const [userCategoryList, setUserCategoryList] = useState([]);
   const [userData, setUserData] = useState("");
   const user = useSelector((state) => state.user);
-  const [blockUser, setBlockUser] = useState([]);
-  const [blockUserFetched, setBlockUserFetched] = useState(false);
+  const blockUserList = useSelector((state) => state.blockUsers);
+  const dispatch = useDispatch();
 
-  const blockUserAPI = async () => {
-    try {
-      if (!blockUserFetched) {
-        const result = await getBlockUser(user.id);
-        setBlockUser(result.data);
-        setBlockUserFetched(true);
-      }
-    } catch (error) {}
+  // 차단한 사용자인지 확인
+  const isBlocked = blockUserList.some(
+    (blockUser) => blockUser.blockInfo.userId === userId
+  );
+
+  const userLikeDTO = {
+    likeUpUser: user.id,
+    likeUpTarget: userId,
   };
 
   const handleBlockUser = async () => {
-    const sendUserInfo = {
-      userInfo: {
-        userId: user.id,
-      },
-      blockInfo: { userId },
-    };
+    if (user.id === userId) {
+      alert("자기 자신을 차단할 수 없습니다.");
+      return;
+    }
 
-    try {
-      // 사용자가 이미 차단되었는지 확인합니다.
-      const existingBlockUser = blockUser.find(
-        (blockedUser) => blockedUser.blockInfo.userId === userId
-      );
-
-      if (existingBlockUser) {
-        // 이미 차단된 경우 차단 정보를 업데이트합니다.
-        const updatedBlockUser = await putBlockUser(userId);
-        alert("차단했습니다.");
-        // 필요한 경우 updatedBlockUser 데이터를 처리합니다.
-      } else {
-        // 차단되지 않은 경우 새로운 차단 항목을 생성합니다.
-        const createdBlockUser = await postBlockUser(sendUserInfo);
-        alert("차단했습니다.");
-        // 필요한 경우 createdBlockUser 데이터를 처리합니다.
+    if (!isBlocked) {
+      const userInput = window.prompt("차단 사유를 메모할 수 있습니다.");
+      if (userInput !== null) {
+        const userBlockDTO = {
+          userId: user.id,
+          blockId: userId,
+          blockReason: userInput,
+        };
+        await postBlockUser(userBlockDTO);
+        await dispatch(asyncBlockUsers(user.id));
+        alert("차단하였습니다");
       }
-
-      // 페이지를 다시 로드하거나 필요한 경우 상태를 업데이트합니다.
-      window.location.reload();
-    } catch (error) {
-      // 오류 처리
-      console.error("사용자 차단 중 오류 발생:", error);
+    } else {
+      alert("이미 차단된 사용자입니다.");
     }
   };
 
   const userLikeAPI = async () => {
     await userLike(userLikeDTO);
-  };
-
-  useEffect(() => {
-    blockUserAPI();
-  }, [user, blockUserFetched]);
-
-  const userLikeDTO = {
-    likeUpUser: user.id,
-    likeUpTarget: userId,
+    await getUserAPI();
   };
 
   const getUserAPI = async () => {

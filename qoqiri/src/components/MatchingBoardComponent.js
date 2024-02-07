@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { getCategoryTypes } from "../api/categoryType";
 import { getCategories } from "../api/category";
 import { getPlace, getPlaceType } from "../api/post";
 import { getUserCategory } from "../api/category";
-import { getBlockUser } from "../api/blockuser";
-import {
-  getMatchCategoryInfo,
-  getPosts,
-  getPostsByCategoryType,
-} from "../api/post";
+
+import { getMatchCategoryInfo, getPosts } from "../api/post";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 import styled from "styled-components";
@@ -32,36 +28,46 @@ const StyledMatchingBoardComponent = styled.div`
     align-items: center;
   }
 
-  .select-bar {
-    display: flex;
-    border-radius: 4px;
+  .select_bar {
     width: 100%;
-    padding: 0px 10px;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+    padding: 10px 10px;
     margin-bottom: 12px;
     background-color: #ffffff;
   }
 
-  .select-bar a {
+  .active {
     padding: 5px 10px;
     border-radius: 4px;
-    line-height: 56px;
     margin: 5px;
     color: #4d391c;
     border-style: none;
     font-weight: 700;
     transition: color 0.2s ease;
+    cursor: pointer;
   }
 
-  .select-bar a:hover {
+  .active:hover {
     color: #ff7f38;
   }
 
   .search-box {
     width: 100%;
+    height: 50px;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     background-color: #ffffff;
-    padding: 5px 25px;
+    padding: 0px 10px;
     margin-bottom: 12px;
+  }
+
+  .select_place {
+    display: flex;
   }
 
   .place-box {
@@ -85,7 +91,7 @@ const StyledMatchingBoardComponent = styled.div`
 
   .search_btn {
     margin-left: 15px;
-    padding: 8px 15px;
+    padding: 12px 10px;
     border-radius: 4px;
     border-style: none;
     font-weight: 800;
@@ -131,8 +137,6 @@ const MatchingBoardComponent = () => {
   const [selectedPlaceType, setSelectedPlaceType] = useState(null);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const user = useSelector((state) => state.user);
-  const [blockUser, setBlockUser] = useState([]);
-  const [blockUserFetched, setBlockUserFetched] = useState(false);
   const [isFiltered, setIsFiltered] = useState(false);
 
   const viewCategory = () => {
@@ -155,38 +159,6 @@ const MatchingBoardComponent = () => {
     setIsFiltered(true);
   };
 
-  const blockUserAPI = async () => {
-    try {
-      if (!blockUserFetched) {
-        const result = await getBlockUser(user.id);
-        setBlockUser(result.data);
-        setBlockUserFetched(true);
-      }
-    } catch (error) {
-      // 에러 처리
-    }
-  };
-
-  const blockUserPost = () => {
-    // blockUser가 배열인 것으로 가정하며, 차단된 사용자가 있는지 확인합니다.
-    if (blockUser.length > 0) {
-      const filteredBlock = posts.filter(
-        (post) =>
-          !blockUser.some(
-            (blockedUser) =>
-              post.userInfo.userId === blockedUser.blockInfo.userId &&
-              blockedUser.unblock !== "N"
-          )
-      );
-      setPosts(filteredBlock);
-    }
-  };
-
-  useEffect(() => {
-    blockUserAPI();
-    blockUserPost();
-  }, [user, blockUserFetched]);
-
   const searchList = useSelector((state) => {
     return state.post;
   });
@@ -195,19 +167,25 @@ const MatchingBoardComponent = () => {
     setPosts(searchList);
   }, [searchList]);
 
-  // 카테고리 타입 SEQ받아서 해당하는 POST가져오기
-  const PostsByCategoryTypeAPI = async () => {
-    const result = await getPostsByCategoryType(id);
-    setPosts(result.data);
-  };
-
   const getUserCategoryAPI = async () => {
     const result = await getUserCategory(user.id);
     setUserCategory(result.data);
   };
 
-  const getPostsAPI = async () => {
-    const result = await getPosts();
+  const getPostsAPI = async (
+    page,
+    userId,
+    categoryTypeSEQ,
+    placeSEQ,
+    placeTypeSEQ
+  ) => {
+    const result = await getPosts(
+      page,
+      userId,
+      categoryTypeSEQ,
+      placeSEQ,
+      placeTypeSEQ
+    );
     await setPosts(result.data);
   };
 
@@ -261,23 +239,16 @@ const MatchingBoardComponent = () => {
     setSelectedPlace(selectedPlace);
   };
 
-  const filterPosts = () => {
-    if (selectedPlaceType) {
-      const filtered = posts.filter(
-        (post) => post.place?.placeType?.placeTypeSEQ == selectedPlaceType
-      );
-      setFilteredPosts(filtered);
-    } else if (selectedPlace) {
-      const filtered = posts.filter(
-        (post) => post.place?.placeSEQ == selectedPlace
-      );
-      setFilteredPosts(filtered);
-    }
-    setIsFiltered(true);
+  const allCategoryView = () => {
+    getPosts(null, user.id, null, selectedPlace, selectedPlaceType);
   };
 
-  const allView = () => {
-    setIsFiltered(false);
+  const allPlaceView = () => {
+    getPostsAPI(null, user.id, id, null, null);
+  };
+
+  const viewPlace = () => {
+    getPostsAPI(null, user.id, id, selectedPlace, selectedPlaceType);
   };
 
   useEffect(() => {
@@ -297,7 +268,7 @@ const MatchingBoardComponent = () => {
     if (id == null) {
       getPostsAPI(); // id가 없을 때는 postsAPI 실행
     } else {
-      PostsByCategoryTypeAPI(); // id가 있을 때는 PostsByCategoryTypeAPI 실행
+      getPostsAPI(null, user.id, id, selectedPlace, selectedPlaceType);
     }
   }, [id]);
 
@@ -309,7 +280,13 @@ const MatchingBoardComponent = () => {
 
   const loadMorePosts = async () => {
     const nextPage = page + 1;
-    const result = await getPosts(nextPage);
+    const result = await getPosts(
+      nextPage,
+      user.id,
+      id,
+      selectedPlace,
+      selectedPlaceType
+    );
 
     if (result.data.length > 0) {
       // 새로운 페이지에 게시물이 있을 경우
@@ -323,11 +300,8 @@ const MatchingBoardComponent = () => {
   return (
     <StyledMatchingBoardComponent>
       <div className="main">
-        <div className="select-bar">
-          <div className="active-button">
-            <Link to="/matchingBoard" className="active">
-              전체보기
-            </Link>
+        <div className="select_bar">
+          <div className="category_list">
             {categoryType.map((cat) => (
               <Link
                 to={`/matchingBoard/${cat?.ctSEQ}`}
@@ -338,43 +312,52 @@ const MatchingBoardComponent = () => {
               </Link>
             ))}
           </div>
+          <div>
+            <button className="search_btn" onClick={viewCategory}>
+              내 관심사만 보기
+            </button>
+            <button className="search_btn" onClick={allCategoryView}>
+              모든 카테고리 보기
+            </button>
+          </div>
         </div>
         <div className="search-box">
-          <div className="place-box">
-            <h1>지역 선택</h1>
-            <select onChange={handlePlaceTypeChange}>
-              <option value="">지역을 선택해주세요</option>
-              {placeType.map((type) => (
-                <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
-                  {type.placeTypeName}
-                </option>
-              ))}
-            </select>
+          <div className="select_place">
+            <div className="place-box">
+              <h1>지역 선택</h1>
+              <select onChange={handlePlaceTypeChange}>
+                <option value="">지역을 선택해주세요</option>
+                {placeType.map((type) => (
+                  <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
+                    {type.placeTypeName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="place-box">
+              <h1>상세 지역</h1>
+              <select onChange={handlePlaceChange}>
+                <option value="">상세 지역을 선택해주세요</option>
+                {filteredPlaces.map((place) => (
+                  <option key={place.placeSEQ} value={place.placeSEQ}>
+                    {place.placeName}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="place-box">
-            <h1>상세 지역</h1>
-            <select onChange={handlePlaceChange}>
-              <option value="">상세 지역을 선택해주세요</option>
-              {filteredPlaces.map((place) => (
-                <option key={place.placeSEQ} value={place.placeSEQ}>
-                  {place.placeName}
-                </option>
-              ))}
-            </select>
+          <div>
+            <button className="search_btn" onClick={viewPlace}>
+              선택한 지역만 보기
+            </button>
+            <button className="search_btn" onClick={allPlaceView}>
+              모든 지역 보기
+            </button>
           </div>
-          <button className="search_btn" onClick={filterPosts}>
-            선택한 지역만 보기
-          </button>
-          <button className="search_btn" onClick={viewCategory}>
-            내 관심사만 보기
-          </button>
-          <button className="search_btn" onClick={allView}>
-            전체 보기
-          </button>
         </div>
         <div className="post_list">
           {isFiltered
-            ? filteredPosts.map((post) => (
+            ? posts.map((post) => (
                 <Post key={post.postSEQ} postSEQ={post.postSEQ} />
               ))
             : posts.map((post) => (

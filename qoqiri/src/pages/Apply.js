@@ -148,7 +148,13 @@ const Apply = () => {
           {appliedUsers.map((userInfo) => (
             <section className="ap-section" key={userInfo.matchingUserInfoSeq}>
               <div className=".apply-form">
-                <ApplyForm userInfo={userInfo.userInfo} postSEQ={postSEQ} />
+                <ApplyForm
+                  userInfo={userInfo.userInfo}
+                  postSEQ={postSEQ}
+                  getMatchingUserInfoByPostSEQAPI={
+                    getMatchingUserInfoByPostSEQAPI
+                  }
+                />
               </div>
             </section>
           ))}

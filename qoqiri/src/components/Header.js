@@ -19,6 +19,7 @@ import { checkNotify, getUnreadNotify } from "../api/notify";
 import NotifyList from "./NotifyList";
 import ChatList from "./ChatList";
 import { asyncMyPostNotMatched } from "../store/myPostSlice";
+import { asyncBlockUsers } from "../store/blockUserSlice";
 
 const Header = () => {
   const location = useLocation();
@@ -50,6 +51,7 @@ const Header = () => {
     if (Object.keys(user).length !== 0) {
       dispatch(asyncChatRooms(user.id));
       dispatch(asyncMyPostNotMatched(user.id));
+      dispatch(asyncBlockUsers(user.id));
       unreadNotifyAPI();
     }
 
