@@ -9,7 +9,7 @@ import {
   faBell as regularBell,
   faComment,
 } from "@fortawesome/free-regular-svg-icons";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { userSave, userLogout } from "../store/userSlice";
@@ -33,6 +33,7 @@ const Header = () => {
   const notifyShow = () => setNotifyListShow(true);
   const chatListClose = () => setChatRoomListShow(false);
   const chatListShow = () => setChatRoomListShow(true);
+  const navigate = useNavigate();
 
   // 미확인 알림개수 API
   const unreadNotifyAPI = async () => {
@@ -42,9 +43,21 @@ const Header = () => {
 
   // 알림확인처리 API
   const checkNotifyAPI = async () => {
-    // 미확인 알림 구분을 위해 1초 딜레이 후 확인처리
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // 미확인 알림 구분을 위해 딜레이 후 확인처리
+    await new Promise((resolve) => setTimeout(resolve, 500));
     await checkNotify(user.id);
+  };
+
+  const logout = () => {
+    console.log("logout!");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    dispatch(userLogout());
+    window.location.reload(); // 현재 페이지를 새로고침
+  };
+
+  const search = () => {
+    navigate(`/search/${keyword}`);
   };
 
   useEffect(() => {
@@ -64,14 +77,6 @@ const Header = () => {
   if (location.pathname === "/Login" || location.pathname === "/signup") {
     return null; // 로그인, 회원가입 페이지일때 헤더 숨김
   }
-
-  const logout = () => {
-    console.log("logout!");
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    dispatch(userLogout());
-    window.location.reload(); // 현재 페이지를 새로고침
-  };
 
   return (
     <>
@@ -109,12 +114,7 @@ const Header = () => {
             }}
           />
 
-          <button
-            className="searchBtn"
-            onClick={() => {
-              dispatch(asyncSearchResult(keyword));
-            }}
-          >
+          <button className="searchBtn" onClick={search}>
             <FontAwesomeIcon
               icon={faMagnifyingGlass}
               style={{

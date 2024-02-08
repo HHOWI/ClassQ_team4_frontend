@@ -15,6 +15,7 @@ import MyComments from "./pages/Mycomments";
 import MyPost from "./pages/Mypost";
 import BlockUserInfo from "./pages/BlockUser";
 import MatchingBoard from "./pages/MatchingBoard";
+import Search from "./pages/Search";
 
 const router = createBrowserRouter([
   {
@@ -81,6 +82,10 @@ const router = createBrowserRouter([
       {
         path: "apply/:postSEQ",
         element: <Apply />,
+      },
+      {
+        path: "search/:keyword",
+        element: <Search />,
       },
     ],
   },

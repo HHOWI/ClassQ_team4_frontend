@@ -4,11 +4,11 @@ import { RouterProvider } from "react-router-dom";
 import Router from "./router";
 import { Provider } from "react-redux";
 import store from "./store";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "../src/assets/fonts/Font.css";
 import "./css/NotifyList.css";
 import "./css/Header.css";
 import "./css/Offcanvas.css";
-import "bootstrap/dist/css/bootstrap.min.css";
 import "./assets/reset.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

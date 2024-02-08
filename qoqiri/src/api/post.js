@@ -74,18 +74,6 @@ export const getSelectAttach = async (id) => {
   return await instance.get(`/postAttachments/${id}`);
 };
 
-export const getSelectPlace = async (id) => {
-  return await instance.get(`public/place/${id}`);
-};
-
-export const getSelectPlaceType = async (id) => {
-  return await instance.get(`/placeType/${id}`);
-};
-
-export const getBoards = async () => {
-  return await instance.get("public/board");
-};
-
 export const getPostList = async (page, board) => {
   let url = `public/post?page=${page}`;
   return await instance.get(url);
@@ -93,14 +81,6 @@ export const getPostList = async (page, board) => {
 
 export const getPost = async (id) => {
   return await instance.get("public/post/" + id);
-};
-
-export const getPlace = async () => {
-  return await instance.get("public/place");
-};
-
-export const getPlaceType = async () => {
-  return await instance.get("public/placeType");
 };
 
 export const getComments = async (id) => {
@@ -115,17 +95,14 @@ export const getSearch = async (keyword) => {
   return await instance.get("public/post/search/" + keyword);
 };
 
-export const addPostLikeAPI = async (data) => {
-  return await instance.post("postLike", data);
-};
-
 // 모든 게시글 가져오기
 export const getPosts = async (
   page,
   userId,
   categoryTypeSEQ,
   placeSEQ,
-  placeTypeSEQ
+  placeTypeSEQ,
+  onMyCategory
 ) => {
   return await instance.get("/public/post", {
     params: {
@@ -134,6 +111,7 @@ export const getPosts = async (
       categoryTypeSEQ: categoryTypeSEQ,
       placeSEQ: placeSEQ,
       placeTypeSEQ: placeTypeSEQ,
+      onMyCategory: onMyCategory,
     },
   });
 };
@@ -160,9 +138,7 @@ export const getMyPostsNotMatched = async (userId) => {
 
 // 매칭글 매칭완료 처리
 export const matchedPost = async (postSEQ) => {
-  try {
-    return await instance.put("matched_post/" + postSEQ);
-  } catch (error) {}
+  return await instance.put("matched_post/" + postSEQ);
 };
 
 // 첨부 파일 불러오는 API
@@ -182,4 +158,14 @@ export const deleteMatchingCategoryAPI = async (id) => {
 // 첨부 파일 삭제
 export const deleteFileAPI = async (files) => {
   return await instance.post("deleteFiles", files);
+};
+
+// 게시글 검색
+export const headerSearch = async (page, userId, keyword) => {
+  return await instance.get(`search/${userId}_${keyword}/${page}`);
+};
+
+// 게시글 조회수 증가
+export const viewCount = async (postSEQ) => {
+  return await instance.put(`/post_viewcount/${postSEQ}`);
 };

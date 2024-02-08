@@ -14,8 +14,12 @@ const StyledImageModal = styled.div`
   justify-content: center;
   z-index: 21;
   background-color: rgba(0, 0, 0, 0.2);
-  .image_carousel {
+  .image_list {
     width: 1000px;
+
+    .image_carosel {
+      width: 100%;
+    }
   }
 `;
 
@@ -35,7 +39,7 @@ const ImageModal = ({ index, attachmentList, handleCloseImage }) => {
   return (
     <StyledImageModal onClick={close}>
       <Carousel
-        className="image_carousel"
+        className="image_list"
         activeIndex={activeIndex}
         onSelect={handleSelect}
         interval={null}
@@ -45,6 +49,7 @@ const ImageModal = ({ index, attachmentList, handleCloseImage }) => {
             <img
               src={`/upload/${attachment?.attachmentURL}`}
               alt={`이미지 ${idx + 1}`}
+              className="image_carosel"
             />
           </Carousel.Item>
         ))}

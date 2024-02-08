@@ -10,7 +10,7 @@ import styled from "styled-components";
 import { getUserCategory } from "../api/category";
 import { formatDate24Hours } from "../utils/TimeFormat";
 import ProfileImgModal from "./ProfileImgModal";
-import { getBlockUser, postBlockUser, putBlockUser } from "../api/blockuser";
+import { postBlockUser } from "../api/blockuser";
 import { asyncBlockUsers } from "../store/blockUserSlice";
 
 const StyledApplyForm = styled.div`

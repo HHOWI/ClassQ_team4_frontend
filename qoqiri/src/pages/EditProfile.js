@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCategoryTypes } from "../api/categoryType";
 import { getCategories } from "../api/category";
-import { getPlaceTypes } from "../api/placeType";
+import { getPlaceType } from "../api/place";
 import { useNavigate } from "react-router-dom";
 import { editProfile } from "../api/user";
 import { useDispatch } from "react-redux";
@@ -571,7 +571,7 @@ const EditProfile = () => {
   const [placeTypes, setPlaceTypes] = useState([]);
 
   const placeTypeAPI = async () => {
-    const result = await getPlaceTypes();
+    const result = await getPlaceType();
     setPlaceTypes(result.data);
   };
 

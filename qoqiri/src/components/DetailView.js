@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import defaultimg from "../assets/defaultimg.png";
 import styled from "styled-components";
-import { getAttachments, getPost, getMatchCate, deletePost } from "../api/post";
+import {
+  getAttachments,
+  getPost,
+  getMatchCate,
+  deletePost,
+  viewCount,
+} from "../api/post";
 import { viewComments } from "../store/commentSlice";
 import { useSelector, useDispatch } from "react-redux";
 import AddComment from "../components/AddComment";
@@ -230,6 +236,11 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
     setCategoryList(result.data);
   };
 
+  // 조회수 증가
+  const viewCountAPI = async () => {
+    await viewCount(selectedPostSEQ);
+  };
+
   // 프로필카드 모달 여는 함수
   const handleOpenProfile = () => {
     setIsProfileModalOpen(true);
@@ -286,6 +297,7 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
     getPostAPI();
     getAttachmentsAPI();
     getMatchingCategoryInfoAPI();
+    viewCountAPI();
   }, [selectedPostSEQ]);
 
   useEffect(() => {
