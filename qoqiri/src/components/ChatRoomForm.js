@@ -19,11 +19,11 @@ const StyledChatRoomForm = styled.div`
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
     padding: 15px;
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: background-color 0.2s ease;
   }
 
   .chat-link:hover {
-    opacity: 0.7;
+    background-color: rgb(241, 241, 241);
   }
 
   .chat-top {

@@ -33,7 +33,7 @@ const StyledPost = styled.div`
   }
 
   .post_body:hover {
-    background-color: rgb(235, 238, 241);
+    background-color: rgb(241, 241, 241);
   }
 
   .post_top {

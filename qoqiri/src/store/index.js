@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import userSlice from "./userSlice";
 import commentSlice from "./commentSlice";
 import chatRoomSlice from "./chatRoomSlice";
-import postSlice from "./postSlice";
 import myPostSlice from "./myPostSlice";
 import blockUserSlice from "./blockUserSlice";
 
@@ -13,7 +12,6 @@ const store = configureStore({
     user: userSlice.reducer,
     comment: commentSlice.reducer,
     chatRoom: chatRoomSlice.reducer,
-    post: postSlice.reducer,
     myPost: myPostSlice.reducer,
     blockUsers: blockUserSlice.reducer,
   },

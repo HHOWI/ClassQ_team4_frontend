@@ -14,7 +14,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { userSave, userLogout } from "../store/userSlice";
 import { asyncChatRooms } from "../store/chatRoomSlice";
-import { asyncSearchResult } from "../store/postSlice";
 import { checkNotify, getUnreadNotify } from "../api/notify";
 import NotifyList from "./NotifyList";
 import ChatList from "./ChatList";
