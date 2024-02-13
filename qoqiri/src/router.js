@@ -5,17 +5,16 @@ import Home from "./pages/Home";
 import Apply from "./pages/Apply";
 import Login from "./pages/Login";
 import SignUp from "./pages/Signup";
-import UserInfoPage from "./pages/Myinfo";
 import Review from "./pages/Review";
 import PostWrite from "./pages/PostWrite";
 import PostEdit from "./pages/PostEdit";
 import EditProfile from "./pages/EditProfile";
-import SignupInfo from "./pages/SignupInfo";
 import MyComments from "./pages/Mycomments";
 import MyPost from "./pages/Mypost";
 import BlockUserInfo from "./pages/BlockUser";
 import MatchingBoard from "./pages/MatchingBoard";
 import Search from "./pages/Search";
+import MyInfo from "./pages/MyInfo";
 
 const router = createBrowserRouter([
   {
@@ -52,8 +51,8 @@ const router = createBrowserRouter([
         element: <SignUp />,
       },
       {
-        path: "myinfo",
-        element: <UserInfoPage />,
+        path: "MyInfo",
+        element: <MyInfo />,
       },
       {
         path: "review",
@@ -63,10 +62,7 @@ const router = createBrowserRouter([
         path: "/EditProfile",
         element: <EditProfile />,
       },
-      {
-        path: "/SignupInfo",
-        element: <SignupInfo />,
-      },
+
       {
         path: "/Mycomments",
         element: <MyComments />,

@@ -1,87 +1,96 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import "../css/Myinfo.css";
-import Paging from "../components/Paging";
+import MyInfoHeader from "../components/MyInfoHeader";
 
-const UserInfoPage = () => {
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  const categories = [
-    "가입 정보",
-    "회원정보 변경",
-    "내가 쓴 글",
-    "내가 쓴 댓글",
-    "차단한 사용자",
-  ];
-  const [categoryData, setCategoryData] = useState([]);
-  const [userCategoryData, setUserCategoryData] = useState([]);
-  const userId = useSelector((state) => state.user.id);
-  const navigate = useNavigate();
+const MyInfo = () => {
+  const [userInfo, setUserInfo] = useState(null);
 
-  const handleCategoryClick = (category) => {
-    if (category === "가입 정보") {
-      navigate("/SignupInfo");
+  useEffect(() => {
+    const storedUserInfo = localStorage.getItem("user");
+    if (storedUserInfo) {
+      const parsedUserInfo = JSON.parse(storedUserInfo);
+      setUserInfo(parsedUserInfo);
     }
-    if (category === "회원정보 변경") {
-      navigate("/EditProfile");
-    }
-    if (category === "내가 쓴 댓글") {
-      navigate("/Mycomments");
-      return;
-    }
-    if (category === "내가 쓴 글") {
-      navigate("/Mypost");
-      return;
-    }
-    if (category === "차단한 사용자") {
-      navigate("/BlockUserInfo");
-      return;
-    }
-
-    setSelectedCategory(category);
-    setCurrentPage(1);
-    const filteredData = categoryData.filter((item) => item.includes(category));
-    setUserCategoryData(filteredData);
-  };
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = userCategoryData.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
+  }, []);
 
   return (
-    <div className="category-page">
-      <div className="category-buttons">
-        {categories.map((category, index) => (
-          <button
-            key={index}
-            onClick={() => handleCategoryClick(category)}
-            style={{
-              backgroundColor:
-                selectedCategory === category ? "#FF9615" : "white",
-            }}
-          >
-            {category}
-          </button>
-        ))}
+    <>
+      <MyInfoHeader />
+      <div className="selected-category">
+        {userInfo ? (
+          <table className="user-info-table">
+            <thead>
+              <tr>
+                <th>항목</th>
+                <th>내용</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>아이디</td>
+                <td>{userInfo.id}</td>
+              </tr>
+              <tr>
+                <td>비밀번호</td>
+                <td>비공개 (표시되지 않음)</td>
+              </tr>
+              <tr>
+                <td>이름</td>
+                <td>{userInfo.name}</td>
+              </tr>
+              <tr>
+                <td>닉네임</td>
+                <td>{userInfo.nickname}</td>
+              </tr>
+              <tr>
+                <td>지역</td>
+                <td>{userInfo.placeType.placeTypeName}</td>
+              </tr>
+              <tr>
+                <td>나이</td>
+                <td>{userInfo.age || "비공개"}</td>
+              </tr>
+              <tr>
+                <td>성별</td>
+                <td>{userInfo.gender || "비공개"}</td>
+              </tr>
+              <tr>
+                <td>휴대전화번호</td>
+                <td>{userInfo.phone}</td>
+              </tr>
+              <tr>
+                <td>이메일</td>
+                <td>{userInfo.email}</td>
+              </tr>
+              <tr>
+                <td>상태메시지</td>
+                <td>{userInfo.statusMessage || "비공개"}</td>
+              </tr>
+              <tr>
+                <td>애인여부</td>
+                <td>{userInfo.hasPartner || "비공개"}</td>
+              </tr>
+              <tr>
+                <td>혈액형</td>
+                <td>{userInfo.bloodType || "비공개"}</td>
+              </tr>
+              <tr>
+                <td>MBTI</td>
+                <td>{userInfo.mbti || "비공개"}</td>
+              </tr>
+              <tr>
+                <td>생일</td>
+                <td>
+                  {userInfo.birthday
+                    ? userInfo.birthday.split("T")[0]
+                    : "비공개"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        ) : null}
       </div>
-
-      {selectedCategory && (
-        <div className="pagination">
-          <Paging
-            totalItems={userCategoryData.length}
-            itemsPerPage={itemsPerPage}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
-export default UserInfoPage;
+export default MyInfo;

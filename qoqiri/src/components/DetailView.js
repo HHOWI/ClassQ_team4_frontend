@@ -71,6 +71,7 @@ const StyledDetailView = styled.div`
     }
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
+    z-index: 20;
   }
 
   .detail_post_body {
@@ -89,6 +90,7 @@ const StyledDetailView = styled.div`
     flex-direction: row;
     justify-content: space-between;
     margin-bottom: 10px;
+    position: relative;
   }
 
   .detail_profile {
@@ -109,11 +111,19 @@ const StyledDetailView = styled.div`
       margin-bottom: auto;
     }
   }
-
-  .post_place_date {
+  .detaile_date_view {
     font-size: 0.8rem;
-    margin-bottom: auto;
     color: gray;
+    .post_place_date {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .detaile_view {
+      position: absolute;
+      right: 0;
+      top: 20px;
+    }
   }
 
   .title {
@@ -349,9 +359,12 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
                   {post?.userInfo?.userNickname}
                 </div>
               </div>
-              <div className="post_place_date">
-                {post?.place?.placeType?.placeTypeName} {post?.place?.placeName}{" "}
-                · {formatDate24Hours(post?.postDate)}
+              <div className="detaile_date_view">
+                <div className="post_place_date">
+                  {post?.place?.placeType?.placeTypeName}{" "}
+                  {post?.place?.placeName} · {formatDate24Hours(post?.postDate)}
+                </div>
+                <div className="detaile_view">조회수 {post.postView}</div>
               </div>
             </div>
             <div className="title">{post?.postTitle}</div>
@@ -400,11 +413,10 @@ const DetailView = ({ selectedPostSEQ, handleCloseDetailView }) => {
             ) : null}
           </div>
         </div>
-
-        <AddComment code={post !== null ? post.postSEQ : null} />
         {comments?.map((comment) => (
           <Comment key={comment.commentsSEQ} comment={comment} />
         ))}
+        <AddComment code={post !== null ? post.postSEQ : null} />
       </div>
 
       {isImageModalOpen && (

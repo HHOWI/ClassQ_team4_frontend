@@ -37,17 +37,19 @@
 .blockUser-table th:nth-child(1),
 .blockUser-table td:nth-child(1) {
   width: 25%;
-  /* 글 제목 칸 너비 */
 }
 
 .blockUser-table th:nth-child(2),
 .blockUser-table td:nth-child(2) {
-  width: 60%;
-  /* 글 내용 칸 너비 */
+  width: 45%;
 }
 
 .blockUser-table th:nth-child(3),
 .blockUser-table td:nth-child(3) {
   width: 15%;
-  /* 작성 날짜 칸 너비 */
+}
+
+.blockUser-table th:nth-child(4),
+.blockUser-table td:nth-child(4) {
+  width: 15%;
 }

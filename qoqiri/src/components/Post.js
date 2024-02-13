@@ -5,12 +5,8 @@ import { faMessage } from "@fortawesome/free-regular-svg-icons";
 import defaultimg from "../assets/defaultimg.png";
 import { formatDate24Hours } from "../utils/TimeFormat";
 import DetailView from "./DetailView";
-import {
-  getAttachments,
-  getCommentCount,
-  getMatchCate,
-  getPost,
-} from "../api/post";
+import { getAttachments, getMatchCate, getPost } from "../api/post";
+import { getCommentCount } from "../api/comment";
 
 const StyledPost = styled.div`
   width: 370px;
@@ -63,13 +59,21 @@ const StyledPost = styled.div`
       margin-bottom: auto;
     }
   }
-
-  .post_date {
-    position: absolute;
+  .post_date_view {
     font-size: 0.7rem;
-    top: 0;
-    right: 0;
+
     color: gray;
+
+    .post_date {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+    .post_view {
+      position: absolute;
+      top: 17px;
+      right: 0;
+    }
   }
 
   .post_title_info {
@@ -206,9 +210,12 @@ const Post = ({ postSEQ }) => {
             />
             <div className="post_nickname">{post?.userInfo?.userNickname}</div>
           </div>
-          <div className="post_date">
-            {post?.place?.placeType?.placeTypeName} {post?.place?.placeName} ·{" "}
-            {formatDate24Hours(post?.postDate)}
+          <div className="post_date_view">
+            <div className="post_date">
+              {post?.place?.placeType?.placeTypeName} {post?.place?.placeName} ·{" "}
+              {formatDate24Hours(post?.postDate)}
+            </div>
+            <div className="post_view">조회수 {post.postView}</div>
           </div>
         </div>
         <div className="post_title_info">

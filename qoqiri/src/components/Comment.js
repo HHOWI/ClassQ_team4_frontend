@@ -13,16 +13,25 @@ import { faThumbsUp } from "@fortawesome/free-regular-svg-icons";
 import { faThumbsUp as solidThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { getLike, postLike, delLike } from "../api/commentLike";
 import { formatDate24Hours } from "../utils/TimeFormat";
+import ProfileModal from "./ProfileModal";
 
 const StyledComment = styled.div`
   width: 700px;
   background-color: white;
+  margin: -1px;
 
   .comment_list {
     width: 100%;
     padding: 10px;
     padding-left: 20px;
     padding-right: 20px;
+  }
+
+  .block_comment {
+    color: rgb(49, 49, 49);
+    font-weight: bold;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ededed;
   }
 
   .comment_top {
@@ -39,6 +48,7 @@ const StyledComment = styled.div`
       .comment_nickname {
         font-weight: bold;
         margin-right: 10px;
+        cursor: pointer;
       }
 
       .comment_date {
@@ -118,13 +128,15 @@ const StyledComment = styled.div`
 `;
 
 const Comment = ({ comment }) => {
-  const [isActive, setIsActive] = useState(true);
   const [content, setContent] = useState(comment.commentDesc);
-  const [like, setLike] = useState(0);
+  const [isActive, setIsActive] = useState(true);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [like, setLike] = useState(0);
   const [liked, setLiked] = useState(false);
   const [seq, setSeq] = useState(0);
   const user = useSelector((state) => state.user);
+  const blockUserList = useSelector((state) => state.blockUsers);
   const dispatch = useDispatch();
 
   const onClick = () => {
@@ -147,6 +159,21 @@ const Comment = ({ comment }) => {
     setLike(result.data); // 좋아요 수 설정
   };
 
+  // 프로필카드 모달 여는 함수
+  const handleOpenProfile = () => {
+    setIsProfileModalOpen(true);
+  };
+
+  // 프로필카드 모달 닫는 함수
+  const handleCloseProfile = () => {
+    setIsProfileModalOpen(false);
+  };
+
+  // 차단한 사용자인지 확인
+  const isBlocked = blockUserList.some(
+    (blockUser) => blockUser.blockInfo.userId === comment.userInfo.userId
+  );
+
   const toggleLike = async () => {
     if (liked) {
       const response = await delLike(seq);
@@ -164,7 +191,7 @@ const Comment = ({ comment }) => {
         const commentLikeId = comment.commentsSEQ;
         const response = await postLike({
           commentLikeId,
-          comments: comment,
+          commentsSEQ: comment.commentsSEQ,
           userInfo: comment.userInfo,
         });
         setSeq(response.data.clSEQ);
@@ -185,32 +212,26 @@ const Comment = ({ comment }) => {
     }
   };
 
-  const onUpdate = () => {
-    dispatch(
+  const onUpdate = async () => {
+    await dispatch(
       updateComment({
         commentsSEQ: comment.commentsSEQ,
-        post: comment.post,
         commentDesc: content,
       })
     );
 
-    dispatch(viewComments(comment.post));
+    await dispatch(viewComments(comment.post));
     setIsEditing(false);
   };
-  const onDelete = () => {
-    dispatch(
+  const onDelete = async () => {
+    await dispatch(
       deleteComment({
         commentsSEQ: comment.commentsSEQ,
-        post: comment.post,
         commentsParentSeq: comment.commentsParentSeq,
-        userInfo: comment.userInfo,
-        commentDesc: content,
-        secretComment: "N",
-        commentDelete: "Y",
       })
     );
 
-    dispatch(viewComments(comment.post));
+    await dispatch(viewComments(comment.post));
   };
 
   useEffect(() => {
@@ -226,76 +247,90 @@ const Comment = ({ comment }) => {
   return (
     <StyledComment>
       <div className="comment_list">
-        <div className="comment_top">
-          <div className="comment_nickname_date">
-            <div className="comment_nickname">
-              {comment.userInfo.userNickname}
-            </div>
-            <div className="comment_date">
-              {formatDate24Hours(comment.commentDate)}
-            </div>
-          </div>
-          <div className="comment_like">
-            <div className="comment_like_icon">
-              {liked ? ( // liked 상태에 따라 아이콘 변경
-                <FontAwesomeIcon
-                  icon={solidThumbsUp}
-                  className="like"
-                  onClick={toggleLike}
-                />
-              ) : (
-                <FontAwesomeIcon
-                  icon={faThumbsUp}
-                  className="like"
-                  onClick={toggleLike}
-                />
-              )}
-            </div>
-            {like > 0 && <div className="comment_like_count">{like}</div>}
-          </div>
-        </div>
-
-        <div className="comment_and_button">
-          <div className="comment_info">
-            {isEditing ? (
-              <textarea
-                className="comment_edit"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
-                cols={50}
-              />
-            ) : (
-              <div className="comment_content">{content}</div>
-            )}
-            {user.id === comment.userInfo.userId && (
-              <div className="comment_button_list">
-                {isEditing ? (
-                  <>
-                    <button className="comment_button" onClick={onUpdate}>
-                      저장
-                    </button>
-                    <button className="comment_button" onClick={editCancel}>
-                      취소
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button className="comment_button" onClick={onClick}>
-                      답글
-                    </button>
-                    <button className="comment_button" onClick={handleEdit}>
-                      수정
-                    </button>
-                    <button className="comment_button" onClick={onDelete}>
-                      삭제
-                    </button>
-                  </>
-                )}
+        {isBlocked ? (
+          <div className="block_comment">차단한 사용자의 댓글입니다.</div>
+        ) : (
+          <>
+            <div className="comment_top">
+              <div className="comment_nickname_date">
+                <div className="comment_nickname" onClick={handleOpenProfile}>
+                  {comment.userInfo.userNickname}
+                </div>
+                <div className="comment_date">
+                  {formatDate24Hours(comment.commentDate)}
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+              <div className="comment_like">
+                <div className="comment_like_icon">
+                  {liked ? ( // liked 상태에 따라 아이콘 변경
+                    <FontAwesomeIcon
+                      icon={solidThumbsUp}
+                      className="like"
+                      onClick={toggleLike}
+                    />
+                  ) : (
+                    <FontAwesomeIcon
+                      icon={faThumbsUp}
+                      className="like"
+                      onClick={toggleLike}
+                    />
+                  )}
+                </div>
+                {like > 0 && <div className="comment_like_count">{like}</div>}
+              </div>
+            </div>
+
+            <div className="comment_and_button">
+              <div className="comment_info">
+                {isEditing ? (
+                  <textarea
+                    className="comment_edit"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    rows={4}
+                    cols={50}
+                  />
+                ) : (
+                  <div className="comment_content">{content}</div>
+                )}
+                <div className="comment_button_list">
+                  <button className="comment_button" onClick={onClick}>
+                    답글
+                  </button>
+                  {user.id === comment.userInfo.userId && (
+                    <>
+                      {isEditing ? (
+                        <>
+                          <button className="comment_button" onClick={onUpdate}>
+                            저장
+                          </button>
+                          <button
+                            className="comment_button"
+                            onClick={editCancel}
+                          >
+                            취소
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className="comment_button"
+                            onClick={handleEdit}
+                          >
+                            수정
+                          </button>
+                          <button className="comment_button" onClick={onDelete}>
+                            삭제
+                          </button>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <AddComment
@@ -306,6 +341,12 @@ const Comment = ({ comment }) => {
       {comment?.replies?.map((reply) => (
         <Reply reply={reply} key={reply.commentsSEQ} />
       ))}
+      {isProfileModalOpen && (
+        <ProfileModal
+          userId={comment.userInfo.userId}
+          handleCloseProfile={handleCloseProfile}
+        />
+      )}
     </StyledComment>
   );
 };

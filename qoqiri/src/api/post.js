@@ -83,14 +83,6 @@ export const getPost = async (id) => {
   return await instance.get("public/post/" + id);
 };
 
-export const getComments = async (id) => {
-  return await instance.get("public/post/" + id + "/comments");
-};
-
-export const getCommentCount = async (id) => {
-  return await instance.get("public/post/" + id + "/comment");
-};
-
 export const getSearch = async (keyword) => {
   return await instance.get("public/post/search/" + keyword);
 };

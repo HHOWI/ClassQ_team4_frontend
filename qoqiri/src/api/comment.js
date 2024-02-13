@@ -24,3 +24,11 @@ export const delComment = async (data) => {
 export const getComment = async (userId) => {
   return await instance.get(`comments/get/${userId}`);
 };
+
+export const getComments = async (id) => {
+  return await instance.get("public/post/" + id + "/comments");
+};
+
+export const getCommentCount = async (id) => {
+  return await instance.get("public/post/" + id + "/comment");
+};

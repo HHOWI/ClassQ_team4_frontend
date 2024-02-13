@@ -218,6 +218,7 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   const [selectedUser, setSelectedUser] = useState("");
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
+  const blockUserList = useSelector((state) => state.blockUsers);
   const stompClient = useRef(null);
 
   const chatDTO = {
@@ -233,7 +234,7 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
 
   //현재 채팅방의 메세지들 받아오기
   const chatMessageAPI = async () => {
-    const result = await getChatMessage(chatRoomSEQ);
+    const result = await getChatMessage(chatDTO);
     setLoadMessage(result.data);
   };
 
@@ -314,6 +315,14 @@ const ChatRoom = ({ chatRoomSEQ, handleCloseChatRoom }) => {
   // 서버에서 웹소켓 메세지정보 받기
   const recvMessage = (recv) => {
     const currentTime = new Date();
+    if (
+      blockUserList.some(
+        (blockUser) => blockUser.blockInfo.userNickname === recv.nickname
+      )
+    ) {
+      return; // 차단된 사용자일 경우 메시지 무시
+    }
+
     setMessages((prevMessages) => [
       ...prevMessages,
       {

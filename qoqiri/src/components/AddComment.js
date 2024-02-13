@@ -1,5 +1,5 @@
 import { addComment, viewComments } from "../store/commentSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 
@@ -56,6 +56,7 @@ const AddComment = ({ code, active, parent }) => {
   const dispatch = useDispatch();
   const [comment, setComment] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const user = useSelector((state) => state.user);
 
   useEffect(() => {
     // 로그인 여부 확인 로직
@@ -67,15 +68,15 @@ const AddComment = ({ code, active, parent }) => {
     }
   }, []);
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    const data = { post: code, commentDesc: comment };
+  const onSubmit = async (e) => {
+    await e.preventDefault();
+    const data = { post: code, commentDesc: comment, userId: user.id };
     if (parent !== undefined) {
       data.commentsParentSeq = parent;
     }
-    dispatch(addComment(data));
-    setComment("");
-    dispatch(viewComments(code));
+    await dispatch(addComment(data));
+    await setComment("");
+    await dispatch(viewComments(code));
   };
   return (
     <StyledAddComment onSubmit={onSubmit} className={active ? "active" : ""}>

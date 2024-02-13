@@ -41,7 +41,7 @@ const PostWrite = () => {
 
   const handlePlaceTypeChange = (event) => {
     // 지역 선택 핸들러
-    console.log("handlePlaceTypeChange");
+
     const selectedType = event.target.value;
     setSelectedPlaceType(selectedType);
 
@@ -61,7 +61,6 @@ const PostWrite = () => {
 
   // 제목 입력 핸들러
   const onChangeTitle = (e) => {
-    console.log("onChangeTitle");
     const currentTitle = e.target.value;
     setTitle(currentTitle);
   };
@@ -77,11 +76,9 @@ const PostWrite = () => {
     e.preventDefault();
     e.persist();
 
-    console.log("첨부파일 핸들러");
-
     // files 는 객체로 들고옴
     const files = e.target.files;
-    console.log(files);
+
     if (files.length === 0) {
       // 파일이 선택되지 않았을 때 아무 동작도 하지 않음
       return;
@@ -90,11 +87,11 @@ const PostWrite = () => {
     const maxFileSize = 10 * 1024 * 1024; // 사진 용량 제한 10mb
     const filesList = [...files];
     const imgList = [];
-    console.log(filesList);
+
     for (let i = 0; i < files.length; i++) {
       // 사진 3장까지만 제한
       const image = URL.createObjectURL(files[i]);
-      console.log(image);
+
       if (filesList[i].size <= maxFileSize) {
         if (filesList.length <= maxFileCount) {
           imgList.push(image);
@@ -111,8 +108,6 @@ const PostWrite = () => {
   };
 
   const handlerDeleteImage = (e, img) => {
-    console.log("삭제 버튼 눌림 !!");
-
     const newImgUrl = imagePreviews.filter((image) => image != img);
     setImagePreviews(newImgUrl);
     URL.revokeObjectURL(img);
@@ -121,7 +116,6 @@ const PostWrite = () => {
 
   // 카테고리 선택 핸들러
   const handleInterestClick = (categorySEQ, TypeSEQ) => {
-    // console.log(seq);
     setSelectlike([]);
     setSelectSEQ([]);
 
@@ -143,7 +137,7 @@ const PostWrite = () => {
 
     const fetchCategories = async () => {
       const result = await getCategories();
-      // console.log(result.data);
+
       setCategories(result.data);
     };
 
@@ -177,14 +171,6 @@ const PostWrite = () => {
     placeTypeAPI();
   }, []);
 
-  useEffect(() => {
-    console.log(selectedPlace);
-  }, [selectedPlace]);
-
-  useEffect(() => {
-    console.log(selectedPlaceType);
-  }, [selectedPlaceType]);
-
   const handleCancel = (e) => {
     alert("글쓰기를 취소했습니다");
     navigate("/");
@@ -217,15 +203,13 @@ const PostWrite = () => {
       placeTypeSEQ: selectedPlaceType,
       boardSEQ: selectedBoard,
     };
-    console.log(PostDTO);
+
     let postResponse;
 
     try {
       // addPostAPI를 이용해 서버로 전달
       postResponse = await addPostAPI(PostDTO);
-      console.log(postResponse);
     } catch (error) {
-      console.error("Error adding post:", error);
       alert("글쓰기 중 오류가 발생했습니다.");
       return;
     }
@@ -234,20 +218,20 @@ const PostWrite = () => {
       categoryList: selectlike,
       categoryTypeList: selectSEQ,
     };
-    console.log(MatchingDTO);
 
-    if (sendImgs.length > 0) {
-      const formData = new FormData();
+    if (sendImgs) {
+      if (sendImgs.length > 0) {
+        const formData = new FormData();
 
-      formData.append("postId", postResponse.data.postSEQ);
+        formData.append("postId", postResponse.data.postSEQ);
 
-      sendImgs.forEach((image) => {
-        formData.append("files", image);
-      });
-      console.log(formData);
+        sendImgs.forEach((image) => {
+          formData.append("files", image);
+        });
 
-      // 첨부파일 API
-      await addAttachmentsAPI(formData);
+        // 첨부파일 API
+        await addAttachmentsAPI(formData);
+      }
     }
 
     const matchingResponse = await addMatchingAPI({
@@ -256,7 +240,6 @@ const PostWrite = () => {
         categorySEQ,
       })),
     });
-    console.log(matchingResponse);
 
     if (postResponse.data) {
       alert("글쓰기 성공");
@@ -385,8 +368,6 @@ const PostWrite = () => {
                   {imagePreviews.length > 0
                     ? imagePreviews.map((img, index) => (
                         <div key={index}>
-                          {console.log(img)}
-
                           <img
                             src={img}
                             alt={`사진 미리보기 ${index + 1}`}
@@ -433,7 +414,6 @@ const PostWrite = () => {
           </div>
         </div>
       </div>
-      {console.log(sendImgs)}
     </>
   );
 };

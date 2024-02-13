@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getComments } from "../api/post";
-import { postComment, putComment, delComment } from "../api/comment";
+import {
+  postComment,
+  putComment,
+  delComment,
+  getComments,
+} from "../api/comment";
 
 // redux-toolkit : createSlice 사용
 // 비동기처리 : createAsyncThunk
