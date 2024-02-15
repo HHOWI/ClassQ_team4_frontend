@@ -2,16 +2,28 @@ import React, { useState, useEffect } from "react";
 import { getMyPosts } from "../api/post";
 import "../css/Mypost.css";
 import MyInfoHeader from "../components/MyInfoHeader";
+import DetailView from "../components/DetailView";
 
 function Mypost() {
   const [myPosts, setMyPosts] = useState([]);
-  const [userInfo, setUserInfo] = useState(null);
+  const [postSEQ, setPostSEQ] = useState("");
+  const [isDetailViewOpen, setIsDetailViewOpen] = useState(false);
+
+  // 게시글 상세보기 모달 열기 함수
+  const handleOpenDetailView = async (postSEQ) => {
+    await setPostSEQ(postSEQ);
+    await setIsDetailViewOpen(true);
+  };
+
+  // 게시글 상세보기 모달 닫기 함수
+  const handleCloseDetailView = () => {
+    setIsDetailViewOpen(false);
+  };
 
   useEffect(() => {
     const storedUserInfo = localStorage.getItem("user");
     if (storedUserInfo) {
       const parsedUserInfo = JSON.parse(storedUserInfo);
-      setUserInfo(parsedUserInfo);
 
       const getMyPost = async () => {
         try {
@@ -43,7 +55,12 @@ function Mypost() {
           <tbody>
             {myPosts.map((post) => (
               <tr key={post.id}>
-                <td>{post.postTitle}</td>
+                <td
+                  onClick={() => handleOpenDetailView(post.postSEQ)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {post.postTitle}
+                </td>
                 <td>{post.postContent}</td>
                 <td>{post.postDate.split("T")[0]}</td>
               </tr>
@@ -51,6 +68,12 @@ function Mypost() {
           </tbody>
         </table>
       </div>
+      {isDetailViewOpen && (
+        <DetailView
+          selectedPostSEQ={postSEQ}
+          handleCloseDetailView={handleCloseDetailView}
+        />
+      )}
     </>
   );
 }

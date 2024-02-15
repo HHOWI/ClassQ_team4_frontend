@@ -4,8 +4,12 @@ import "../css/BlockUser.css";
 import { asyncBlockUsers } from "../store/blockUserSlice";
 import { formatSendTime } from "../utils/TimeFormat";
 import MyInfoHeader from "../components/MyInfoHeader";
+import ProfileModal from "../components/ProfileModal";
+import { useState } from "react";
 
 const BlockUserInfo = () => {
+  const [selectedUser, setSelectedUser] = useState("");
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const user = useSelector((state) => state.user);
   const blockUserList = useSelector((state) => state.blockUsers);
   const dispatch = useDispatch();
@@ -18,6 +22,18 @@ const BlockUserInfo = () => {
 
     await deleteBlock(userBlockDTO);
     await dispatch(asyncBlockUsers(user.id));
+  };
+
+  // 프로필카드 모달 여는 함수
+  const handleOpenProfile = (userId) => {
+    setSelectedUser(userId);
+    setIsProfileModalOpen(true);
+  };
+
+  // 프로필카드 모달 닫는 함수
+  const handleCloseProfile = () => {
+    setSelectedUser(null);
+    setIsProfileModalOpen(false);
   };
 
   return (
@@ -36,7 +52,12 @@ const BlockUserInfo = () => {
           <tbody>
             {blockUserList.map((blockUser) => (
               <tr key={blockUser.blockUserSeq}>
-                <td>{blockUser.blockInfo.userNickname}</td>
+                <td
+                  onClick={() => handleOpenProfile(blockUser.blockInfo.userId)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {blockUser.blockInfo.userNickname}
+                </td>
                 <td>{blockUser.blockReason}</td>
                 <td>{formatSendTime(blockUser.blockDate)}</td>
                 <td>
@@ -51,6 +72,12 @@ const BlockUserInfo = () => {
           </tbody>
         </table>
       </div>
+      {isProfileModalOpen && (
+        <ProfileModal
+          userId={selectedUser}
+          handleCloseProfile={handleCloseProfile}
+        />
+      )}
     </>
   );
 };

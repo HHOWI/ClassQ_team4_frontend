@@ -2,16 +2,28 @@ import React, { useState, useEffect } from "react";
 import { getComment } from "../api/comment";
 import "../css/Mycomments.css";
 import MyInfoHeader from "../components/MyInfoHeader";
+import DetailView from "../components/DetailView";
 
 function MyComments() {
   const [myComments, setMyComments] = useState([]);
-  const [userInfo, setUserInfo] = useState(null);
+  const [postSEQ, setPostSEQ] = useState("");
+  const [isDetailViewOpen, setIsDetailViewOpen] = useState(false);
+
+  // 게시글 상세보기 모달 열기 함수
+  const handleOpenDetailView = async (postSEQ) => {
+    await setPostSEQ(postSEQ);
+    await setIsDetailViewOpen(true);
+  };
+
+  // 게시글 상세보기 모달 닫기 함수
+  const handleCloseDetailView = () => {
+    setIsDetailViewOpen(false);
+  };
 
   useEffect(() => {
     const storedUserInfo = localStorage.getItem("user");
     if (storedUserInfo) {
       const parsedUserInfo = JSON.parse(storedUserInfo);
-      setUserInfo(parsedUserInfo);
 
       const getMyComments = async () => {
         try {
@@ -44,13 +56,24 @@ function MyComments() {
             {myComments.map((comment) => (
               <tr key={comment.commentsSEQ}>
                 <td>{comment.commentsSEQ}</td>
-                <td>{comment.commentDesc}</td>
+                <td
+                  onClick={() => handleOpenDetailView(comment.post?.postSEQ)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {comment.commentDesc}
+                </td>
                 <td>{comment.commentDate.split("T")[0]}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {isDetailViewOpen && (
+        <DetailView
+          selectedPostSEQ={postSEQ}
+          handleCloseDetailView={handleCloseDetailView}
+        />
+      )}
     </>
   );
 }
