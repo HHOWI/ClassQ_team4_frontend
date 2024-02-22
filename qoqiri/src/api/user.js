@@ -14,7 +14,7 @@ export const getUser = async (userId) => {
 };
 
 export const signUp = async (data) => {
-  return await instance.post("signUp", data);
+  return await instance.post("signup", data);
 };
 
 export const findIdByEmail = async (data) => {
@@ -23,6 +23,18 @@ export const findIdByEmail = async (data) => {
 
 export const editProfile = async (data) => {
   return await instance.put("editProfile", data);
+};
+
+export const uploadProfileImg = async (data) => {
+  return await instance.post("uploadProfilePicture", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const userCategoryInfoRegister = async (data) => {
+  return await instance.post("userCategoryInfo", data);
 };
 
 // 좋아요 버튼

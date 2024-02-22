@@ -14,7 +14,7 @@ import MyPost from "./pages/Mypost";
 import BlockUserInfo from "./pages/BlockUser";
 import MatchingBoard from "./pages/MatchingBoard";
 import Search from "./pages/Search";
-import MyInfo from "./pages/MyInfo";
+import MyInfo from "./pages/Myinfo";
 
 const router = createBrowserRouter([
   {

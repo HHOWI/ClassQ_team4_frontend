@@ -100,7 +100,11 @@ const StyledDetailView = styled.div`
     gap: 15px;
     cursor: pointer;
     img {
-      border-radius: 100px;
+      width: 45px;
+      height: 45px;
+      object-fit: cover;
+      box-sizing: border-box;
+      border-radius: 15px;
     }
 
     .detail_nickname {

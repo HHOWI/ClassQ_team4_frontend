@@ -3,7 +3,11 @@ import axios from "axios";
 import { getCategoryTypes } from "../api/categoryType";
 import { getCategories } from "../api/category";
 import { getPlaceType } from "../api/place";
-import { signUp } from "../api/user";
+import {
+  signUp,
+  uploadProfileImg,
+  userCategoryInfoRegister,
+} from "../api/user";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -193,12 +197,11 @@ const StyledSignup = styled.div`
 
   /* 프로필 사진 부분 */
   .profile-picture-preview {
-    width: 150px;
-    height: 150px;
     margin-top: 10px;
     border: 1px solid #ccc;
     object-fit: cover;
-    border-radius: 50%;
+    box-sizing: border-box;
+    border-radius: 25px;
   }
 `;
 
@@ -220,11 +223,16 @@ const SignUp = () => {
   const [selectedGender, setSelectedGender] = useState("");
   const [hasPartner, setHasPartner] = useState("");
   const [selectedBloodType, setSelectedBloodType] = useState("");
-  const [placeType, setPlaceType] = useState("");
   const [mbti, setMbti] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [warningMessage, setWarningMessage] = useState(""); // 상태 메시지 글자수 경고
   const [profilePictureUrl, setProfilePictureUrl] = useState("");
+  const [placeTypes, setPlaceTypes] = useState([]);
+  const [file, setFile] = useState(null);
+  const [selectedPlaceType, setSelectedPlaceType] = useState({
+    placeTypeSEQ: "", // 선택한 placeType의 placeTypeSEQ
+    placeTypeName: "",
+  });
   // 관심사 관련
   const [categories, setCategories] = useState([]);
   const [categoryTypes, setCategoryTypes] = useState([]);
@@ -262,22 +270,6 @@ const SignUp = () => {
         } else {
           setIsIdAvailable(false);
           setIdMessage("이미 사용 중인 아이디입니다.");
-        }
-      })
-      .catch((error) => console.error(error));
-  };
-
-  // 이름 중복 확인 함수
-  const checkNameDuplicate = (currentName) => {
-    fetch(`/api/checkNameDuplicate?name=${currentName}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.isAvailable) {
-          setIsNameAvailable(true);
-          setNameMessage("사용 가능한 이름입니다.");
-        } else {
-          setIsNameAvailable(false);
-          setNameMessage("이미 사용 중인 이름입니다.");
         }
       })
       .catch((error) => console.error(error));
@@ -326,7 +318,6 @@ const SignUp = () => {
     } else {
       setNameMessage("");
       setIsName(true);
-      checkNameDuplicate(currentName);
     }
   };
 
@@ -499,29 +490,12 @@ const SignUp = () => {
   };
 
   // 프로필 사진 파일 업로드 핸들러
-  const handleProfilePictureUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const formData = new FormData();
-        formData.append("profileImg", file);
+  const handleProfilePictureUpload = (e) => {
+    e.preventDefault();
 
-        const response = await axios.post(
-          "http://localhost:8080/qiri/uploadProfilePicture",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        const imageUrl = URL.createObjectURL(file);
-        setProfilePictureUrl(imageUrl);
-      } catch (error) {
-        console.error(error);
-        alert("업로드 중 오류가 발생했습니다. 다시 시도해주세요.");
-      }
-    }
+    const uploadedFile = e.target.files[0];
+    setFile(uploadedFile);
+    setProfilePictureUrl(URL.createObjectURL(uploadedFile));
   };
 
   // 관심 주제 선택 핸들러
@@ -533,6 +507,62 @@ const SignUp = () => {
     } else {
       setSelectlike([...selectlike, interest]);
       setSelectSeq([...selectSeq, seq]);
+    }
+  };
+
+  const getCategoriesByType = (ctSEQ) => {
+    return categories.filter(
+      (category) =>
+        category.categoryType && category.categoryType.ctSEQ === ctSEQ
+    );
+  };
+
+  const placeTypeAPI = async () => {
+    const result = await getPlaceType();
+    setPlaceTypes(result.data);
+  };
+
+  const handleSubmit = async (e) => {
+    if (e) {
+      e.preventDefault(); // 폼 기본 제출 방지
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    const result = await uploadProfileImg(formData);
+    const profileImg = result.data;
+
+    const userInfoDTO = {
+      id,
+      pwd: password,
+      name,
+      nickname,
+      placeType: selectedPlaceType,
+      age,
+      gender: selectedGender,
+      phone,
+      email,
+      hasPartner,
+      birthday: birth,
+      bloodType: selectedBloodType,
+      mbti,
+      statusMessage,
+      profileImg: profileImg,
+    };
+
+    const signUpDTO = {
+      userInfoDTO,
+      userCategories: selectSeq.map((userCategorySeq) => ({ userCategorySeq })),
+    };
+
+    const userResponse = signUp(signUpDTO);
+    await userCategoryInfoRegister(signUpDTO);
+
+    if (userResponse.data) {
+      alert("회원가입 성공. 로그인 해주세요");
+      navigate("/");
+    } else {
+      alert("회원가입 실패. 다시 시도해주세요.");
     }
   };
 
@@ -550,90 +580,8 @@ const SignUp = () => {
 
     fetchCategoryTypes();
     fetchCategories();
-  }, []);
-
-  const getCategoriesByType = (ctSEQ) => {
-    return categories.filter(
-      (category) =>
-        category.categoryType && category.categoryType.ctSEQ === ctSEQ
-    );
-  };
-
-  const [placeTypes, setPlaceTypes] = useState([]);
-
-  const placeTypeAPI = async () => {
-    const result = await getPlaceType();
-    setPlaceTypes(result.data);
-  };
-
-  useEffect(() => {
     placeTypeAPI();
   }, []);
-
-  const [selectedPlaceType, setSelectedPlaceType] = useState({
-    placeTypeSEQ: "", // 선택한 placeType의 placeTypeSEQ
-    placeTypeName: "",
-  });
-
-  const handleSubmit = async (e) => {
-    if (e) {
-      e.preventDefault(); // 폼 기본 제출 방지
-    }
-    const userInfoDTO = {
-      id,
-      pwd: password,
-      name,
-      nickname,
-      placeType: selectedPlaceType,
-      age,
-      gender: selectedGender,
-      phone,
-      email,
-      hasPartner,
-      birthday: birth,
-      bloodType: selectedBloodType,
-      mbti,
-      statusMessage,
-      profileImg: profilePictureUrl,
-    };
-
-    const signUpDTO = {
-      userInfoDTO,
-      userCategories: selectSeq.map((userCategorySeq) => ({ userCategorySeq })),
-    };
-
-    try {
-      const userResponse = await axios.post(
-        "http://localhost:8080/qiri/userInfo/signup",
-        signUpDTO,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const categoryResponse = await axios.post(
-        "http://localhost:8080/qiri/userCategoryInfo",
-        signUpDTO,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (userResponse.data) {
-        alert("회원가입 성공. 로그인 해주세요");
-        navigate("/");
-      } else {
-        alert("회원가입 실패. 다시 시도해주세요.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("오류가 발생했습니다. 다시 시도해주세요.");
-    }
-  };
 
   return (
     <StyledSignup>
@@ -922,7 +870,7 @@ const SignUp = () => {
               id="profilePicture"
               name="profilePicture"
               accept="image/*"
-              onChange={handleProfilePictureUpload}
+              onChange={(e) => handleProfilePictureUpload(e)}
             />
             <br />
             {profilePictureUrl && (
@@ -930,7 +878,7 @@ const SignUp = () => {
                 src={profilePictureUrl}
                 alt="프로필 사진 미리보기"
                 className="profile-picture-preview"
-                // style={{width: "200px"}}
+                style={{ width: "150px", height: "150px" }}
               />
             )}
           </div>
@@ -974,9 +922,9 @@ const SignUp = () => {
 
           <br />
           <br />
-          <form onSubmit={handleSubmit} className="signup-form">
+          <div onClick={handleSubmit} className="signup-form">
             <button type="submit">가입하기</button>
-          </form>
+          </div>
         </div>
       </div>
     </StyledSignup>

@@ -48,7 +48,11 @@ const StyledPost = styled.div`
     flex-direction: row;
     gap: 15px;
     img {
-      border-radius: 100px;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      box-sizing: border-box;
+      border-radius: 15px;
     }
 
     .post_nickname {

@@ -107,6 +107,8 @@ const StyledChatRoom = styled.div`
     margin-right: 10px;
     margin-top: 8px;
     border-radius: 15px;
+    object-fit: cover;
+    box-sizing: border-box;
   }
 
   .chat_list_header {
@@ -160,7 +162,10 @@ const StyledChatRoom = styled.div`
 
       .chat_user_img {
         width: 50px;
+        height: 50px;
         border-radius: 15px;
+        object-fit: cover;
+        box-sizing: border-box;
       }
     }
   }
