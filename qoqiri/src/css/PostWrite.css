@@ -14,13 +14,8 @@
   border-radius: 8px;
 }
 
-.post-content {
-  width: 100%;
-  word-break: break-word;
-}
-
-.post-content .textareaContainer {
-  width: 100%;
+.textareaContainer {
+  width: 1500px;
 }
 
 .wordCount {
@@ -151,21 +146,16 @@
   border-radius: 5px;
   margin-bottom: 30px;
   margin-top: 30px;
-  margin-left: 10px;
 }
 
-#postTitle #title {
+#title {
   background: antiquewhite;
   color: #ff9615;
   font-weight: bold;
   border: 1px #f88e0d;
   padding-right: 10%;
   display: flex;
-  /* width: 40%; */
   border-radius: 5px;
-  margin-bottom: 30px;
-  margin-top: 30px;
-  margin-left: 10px;
 }
 
 #postTitle input::placeholder {
@@ -173,9 +163,9 @@
 }
 
 .select-place {
-  margin-left: 170px;
+  margin-top: 20px;
+  gap: 15px;
   display: flex;
-  justify-content: center;
   align-items: flex-end;
   color: #ff9615;
   font-weight: bold;
@@ -186,27 +176,7 @@
   font-weight: bold;
   border-radius: 8px;
 }
-#cancelButton {
-  position: relative;
-  overflow: hidden;
-  font-size: 1em;
-  font-weight: 600;
-  /* color: #262626; */
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  margin-left: 50px;
-}
-#cancelButton button {
-  background-color: antiquewhite;
-  border: 1px solid #ff9615;
-  color: #ff9615;
-  font-weight: bold;
-  padding: 6px 12px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-}
+
 .submitButton {
   box-sizing: border-box;
   display: flex;
@@ -218,8 +188,9 @@
   font-size: 1em;
   border: 0;
   border-radius: 8px;
-  word-break: keep-all;
+  gap: 20px;
 }
+
 .submitButton button {
   background-color: antiquewhite;
   border: 1px solid #ff9615;
@@ -227,4 +198,12 @@
   padding: 6px 12px;
   border-radius: 5px;
   font-weight: bold;
+}
+
+.post_img_preview {
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  box-sizing: border-box;
+  border-radius: 25px;
 }

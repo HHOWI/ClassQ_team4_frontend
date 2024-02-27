@@ -555,7 +555,7 @@ const SignUp = () => {
       userCategories: selectSeq.map((userCategorySeq) => ({ userCategorySeq })),
     };
 
-    const userResponse = signUp(signUpDTO);
+    const userResponse = await signUp(signUpDTO);
     await userCategoryInfoRegister(signUpDTO);
 
     if (userResponse.data) {
@@ -574,7 +574,6 @@ const SignUp = () => {
 
     const fetchCategories = async () => {
       const result = await getCategories();
-      console.log(result.data);
       setCategories(result.data);
     };
 

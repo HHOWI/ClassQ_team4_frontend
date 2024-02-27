@@ -50,6 +50,7 @@ const StyledSidebar = styled.div`
     color: rgb(49, 49, 49);
     cursor: pointer;
     transition: color 0.2s ease;
+    position: relative;
   }
 
   .post_item:hover {
@@ -63,9 +64,11 @@ const StyledSidebar = styled.div`
   .post_date {
     font-size: 0.8rem;
     color: gray;
-    margin-top: 10px;
     display: flex;
     justify-content: end;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
   }
   .apply_button {
     color: white;

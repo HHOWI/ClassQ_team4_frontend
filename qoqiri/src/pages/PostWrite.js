@@ -35,7 +35,7 @@ const PostWrite = () => {
   const [selectSEQ, setSelectSEQ] = useState([]); // 선택한 세부 카테고리
   const [selectlike, setSelectlike] = useState([]);
 
-  const maxCharacterCount = 100000; // 게시판 글자 제한
+  const maxCharacterCount = 10000; // 게시판 글자 제한
 
   const navigate = useNavigate();
 
@@ -291,64 +291,64 @@ const PostWrite = () => {
             </div>
           </div>
 
+          <div>
+            <div className="select-place">
+              <div>지역 선택</div>
+              <select
+                onChange={handlePlaceTypeChange}
+                style={{
+                  background: "antiquewhite",
+                  color: "#ff9615",
+                  fontWeight: "bold",
+                  borderRadius: "5px",
+                  border: "none",
+                }}
+              >
+                <option value="">지역을 선택해주세요</option>
+                {placeType.map((type) => (
+                  <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
+                    {type.placeTypeName}
+                  </option>
+                ))}
+              </select>
+              {selectedPlaceType && (
+                <div className="select-place">
+                  <h2>상세 지역</h2>
+                  <select
+                    onChange={handlePlaceChange}
+                    style={{
+                      background: "antiquewhite",
+                      color: "#ff9615",
+                      fontWeight: "bold",
+                      borderRadius: "5px",
+                      border: "none",
+                    }}
+                  >
+                    <option value="">상세 지역을 선택해주세요</option>
+                    {filteredPlaces.map((place) => (
+                      <option key={place.placeSEQ} value={place.placeSEQ}>
+                        {place.placeName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+            {selectedPlace && <div></div>}
+          </div>
+
           <div id="postTitle">
             <input
               type="text"
-              name="title"
+              className="title"
               id="title"
               value={title}
               onChange={onChangeTitle}
               placeholder="제목"
               maxLength="100"
             />
-            <div>
-              <div className="select-place">
-                <div>지역 선택</div>
-                <select
-                  onChange={handlePlaceTypeChange}
-                  style={{
-                    background: "antiquewhite",
-                    color: "#ff9615",
-                    fontWeight: "bold",
-                    borderRadius: "5px",
-                    border: "none",
-                    marginLeft: "10px",
-                  }}
-                >
-                  <option value="">지역을 선택해주세요</option>
-                  {placeType.map((type) => (
-                    <option key={type.placeTypeSEQ} value={type.placeTypeSEQ}>
-                      {type.placeTypeName}
-                    </option>
-                  ))}
-                </select>
-                {selectedPlaceType && (
-                  <div className="select-place">
-                    <h2>상세 지역</h2>
-                    <select
-                      onChange={handlePlaceChange}
-                      style={{
-                        background: "antiquewhite",
-                        color: "#ff9615",
-                        fontWeight: "bold",
-                        borderRadius: "5px",
-                        border: "none",
-                        marginLeft: "10px",
-                      }}
-                    >
-                      <option value="">상세 지역을 선택해주세요</option>
-                      {filteredPlaces.map((place) => (
-                        <option key={place.placeSEQ} value={place.placeSEQ}>
-                          {place.placeName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-              {selectedPlace && <div></div>}
-            </div>
           </div>
+
           <div id="file-upload">
             <label htmlFor="image-upload">
               <input
@@ -372,6 +372,7 @@ const PostWrite = () => {
                             src={img}
                             alt={`사진 미리보기 ${index + 1}`}
                             style={{ width: "150px", height: "150px" }}
+                            className="post_img_preview"
                           />
 
                           <button
@@ -389,18 +390,16 @@ const PostWrite = () => {
             </div>
           </div>
 
-          <div className="post-content">
-            <div className="textareaContainer">
-              <textarea
-                name="post-content"
-                id="editor"
-                maxLength={maxCharacterCount}
-                onChange={handleEditorChange}
-                value={content}
-              ></textarea>
-              <div className="wordCount">
-                내용: {content.length} / {maxCharacterCount}
-              </div>
+          <div className="textareaContainer">
+            <textarea
+              className="post-content"
+              id="editor"
+              maxLength={maxCharacterCount}
+              onChange={handleEditorChange}
+              value={content}
+            ></textarea>
+            <div className="wordCount">
+              내용: {content.length} / {maxCharacterCount}
             </div>
           </div>
 
@@ -408,8 +407,6 @@ const PostWrite = () => {
             <button type="submit" onClick={() => handleSubmit()}>
               등록
             </button>
-          </div>
-          <div className="cancelButton">
             <button onClick={() => handleCancel()}>취소 </button>
           </div>
         </div>
