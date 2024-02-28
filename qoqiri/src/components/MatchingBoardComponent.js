@@ -145,7 +145,7 @@ const MatchingBoardComponent = () => {
       placeTypeSEQ,
       onMyCateogry
     );
-    await setPosts(result.data);
+    setPosts(result.data);
   };
 
   // 카테고리 타입 불러오는 API

@@ -255,6 +255,7 @@ const ApplyForm = ({ userInfo, postSEQ, getMatchingUserInfoByPostSEQAPI }) => {
         };
         await postBlockUser(userBlockDTO);
         await dispatch(asyncBlockUsers(user.id));
+        await getMatchingUserInfoByPostSEQAPI();
         alert("차단하였습니다");
       }
     } else {

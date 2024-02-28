@@ -195,7 +195,6 @@ const StyledSignup = styled.div`
     color: #ff9615;
   }
 
-  /* 프로필 사진 부분 */
   .profile-picture-preview {
     margin-top: 10px;
     border: 1px solid #ccc;
