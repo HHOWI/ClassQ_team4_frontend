@@ -483,23 +483,23 @@
 
 ### 메인페이지
 
-<img src="screenshots/메인페이지.PNG" width="1200" alt="메인페이지">
+<img src="qoqiri/screenshots/메인페이지.PNG" width="1200" alt="메인페이지">
 
 ### 게시글 상세보기
 
-<img src="screenshots/게시글상세보기.PNG" width="600" alt="게시글 상세보기">
+<img src="qoqiri/screenshots/게시글상세보기.PNG" width="600" alt="게시글 상세보기">
 
 ### 그룹 채팅방
 
-<img src="screenshots/그룹채팅방.PNG" width="800" alt="그룹 채팅방">
+<img src="qoqiri/screenshots/그룹채팅방.PNG" width="800" alt="그룹 채팅방">
 
 ### 프로필 카드 (앞면, 뒷면)
 
-<img src="screenshots/프로필카드%20앞면.PNG" width="300" alt="프로필 카드 앞면">
+<img src="qoqiri/screenshots/프로필카드%20앞면.PNG" width="300" alt="프로필 카드 앞면">
 
 ### 프로필 카드 (뒷면)
 
-<img src="screenshots/프로필카드%20뒷면.PNG" width="300" alt="프로필 카드 뒷면">
+<img src="qoqiri/screenshots/프로필카드%20뒷면.PNG" width="300" alt="프로필 카드 뒷면">
 
 ## 🔮 추가 개선 아이디어
 
